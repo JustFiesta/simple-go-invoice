@@ -63,8 +63,8 @@ docker compose watch
 ### 3. Browser access
 
 ```txt
-Frontend: http://localhost:5173
-Backend API: http://localhost:8080/api/hello
+Frontend: http://localhost:8000
+Backend API: http://localhost:8000/api/hello
 ```
 
 ---
