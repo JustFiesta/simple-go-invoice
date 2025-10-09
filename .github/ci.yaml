@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-backend:
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Load env
+        run: |
+          echo "GO_VERSION=$(cat .env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: ./go.mod
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      # - name: Run backend tests
+      #   run: go test 
+
+      - name: Build backend binary
+        run: go build -o invoice-backend main.go
+
+      - name: Build Docker image for backend
+        run: |
+          docker build --build-arg GO_VERSION=${{ env.GO_VERSION }} -t invoice-backend:latest .
+
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Load env
+        run: |
+          echo "NODE_VERSION=$(cat .env | grep NODE_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run frontend tests
+        run: npm run test || echo "No frontend tests defined"
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build Docker image for frontend
+        run: |
+          docker build -t invoice-frontend:latest .

@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./backend
+    container_name: go-backend
+    ports:
+      - "8080:8080"
+    command: ["go", "run", "main.go"]
+    working_dir: /app
+
+  frontend:
+    build: ./frontend
+    container_name: vue-frontend
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "dev", "--", "--host"]
+    working_dir: /app
+
+networks:
+  app-network:
+    driver: bridge
