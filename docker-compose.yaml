@@ -1,11 +1,43 @@
 services:
-  backend:
-    build: ./backend
-    container_name: go-backend
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik-proxy
     ports:
+      - "8000:80"
       - "8080:8080"
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        GO_VERSION: ${GO_VERSION}
+    container_name: go-backend
+    env_file:
+      - .env
+    expose: 
+      - "8080"
     command: ["go", "run", "main.go"]
     working_dir: /app
+    labels:
+      - "traefik.enable=true"  # Enable Traefik for this service
+      
+      # Route: from /api to backend
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      
+      # Service: define backend service and port
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
     develop:
       watch:
         - action: sync
@@ -15,12 +47,27 @@ services:
           path: ./backend
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NODE_VERSION: ${NODE_VERSION}
     container_name: vue-frontend
-    ports:
-      - "5173:5173"
+    env_file:
+      - .env
+    expose:
+      - "5173"
     command: ["npm", "run", "dev", "--", "--host"]
     working_dir: /app
+    labels:
+      - "traefik.enable=true"
+      
+      # Route: everything that is not /api to frontend
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"
+      
+      # Service
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
     develop:
       watch:
         - action: sync
