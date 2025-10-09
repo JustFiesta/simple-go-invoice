@@ -20,7 +20,7 @@ jobs:
 
       - name: Load env
         run: |
-          echo "GO_VERSION=$(cat .env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+          echo "GO_VERSION=$(cat ../.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -52,7 +52,7 @@ jobs:
 
       - name: Load env
         run: |
-          echo "NODE_VERSION=$(cat .env | grep NODE_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+          echo "NODE_VERSION=$(cat ../.env | grep NODE_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
