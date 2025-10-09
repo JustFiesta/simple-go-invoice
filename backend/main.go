@@ -1,13 +1,27 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+    "log"
+    "github.com/gin-gonic/gin"
+    "backend/config"
+    "backend/database"
+    "backend/routes"
 )
 
 func main() {
+    // Config
+    cfg := config.Load()
+    
+    // DB connection
+    database.Connect()
+    
+    // Router
     r := gin.Default()
-    r.GET("/api/hello", func(c *gin.Context) {
-        c.JSON(200, gin.H{"message": "Hello from Go backend!"})
-    })
-    r.Run(":8080")
+    routes.SetupRoutes(r)
+    
+    // Server start
+    log.Printf("Server starting on %s", cfg.Port)
+    if err := r.Run(cfg.Port); err != nil {
+        log.Fatal("Failed to start server:", err)
+    }
 }
