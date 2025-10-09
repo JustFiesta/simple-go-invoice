@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  GO_VERSION: "1.25"
+  NODE_VERSION: "24.9.0"
+
 jobs:
   build-backend:
 
@@ -17,10 +21,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Load env
-        run: |
-          echo "GO_VERSION=$(cat ../.env.example | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -49,10 +49,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Load env
-        run: |
-          echo "NODE_VERSION=$(cat ../.env.example | grep NODE_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
