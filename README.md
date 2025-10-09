@@ -54,6 +54,12 @@ docker build --build-arg GO_VERSION=$GO_VERSION -t invoice-backend ./backend
 docker build --build-arg NODE_VERSION=$NODE_VERSION -t invoice-frontend ./frontend
 ```
 
+#### Debug
+
+```shell
+docker compose watch
+```
+
 ### 3. Browser access
 
 ```txt

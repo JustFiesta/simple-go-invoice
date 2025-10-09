@@ -6,6 +6,13 @@ services:
       - "8080:8080"
     command: ["go", "run", "main.go"]
     working_dir: /app
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+        - action: rebuild
+          path: ./backend
 
   frontend:
     build: ./frontend
@@ -14,7 +21,10 @@ services:
       - "5173:5173"
     command: ["npm", "run", "dev", "--", "--host"]
     working_dir: /app
-
-networks:
-  app-network:
-    driver: bridge
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+        - action: rebuild
+          path: ./frontend
