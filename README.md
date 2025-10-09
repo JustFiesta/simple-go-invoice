@@ -20,6 +20,7 @@ The project serves as a lightweight example of a RESTful API communicating with 
 - Sort/Search/Filter/Pagination
 - Communication between frontend and backend via HTTP
 - Docker + Compose setup for local development
+- Treafig reverse proxy for one URL to backend/frontend
 
 ---
 
