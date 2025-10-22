@@ -3,17 +3,29 @@ name: CI Pipeline
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
 
 env:
   GO_VERSION: "1.25"
   NODE_VERSION: "24.9.0"
+  ECR_REPO: ${{ secrets.ECR_REPO }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
 
 jobs:
   build-backend:
 
     runs-on: ubuntu-latest
+
+    if: contains(join(fromJson(toJson(github.event.commits.*.modified)), ''), 'backend/')
 
     defaults:
       run:
@@ -36,12 +48,44 @@ jobs:
       - name: Build backend binary
         run: go build -o invoice-backend main.go
 
-      - name: Build Docker image for backend
+      - name: Set version info
+        id: vars
         run: |
-          docker build --build-arg GO_VERSION=${{ env.GO_VERSION }} -t invoice-backend:latest .
+          GIT_TAG=$(git describe --tags --match "backend/v*" --abbrev=0 2>/dev/null || echo "backend/v0.0.0")
+          VERSION=$(echo $GIT_TAG | sed 's/backend\/v//')
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            ENV_TAG="prod"
+          else
+            ENV_TAG="dev"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=${VERSION}-${ENV_TAG}-${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend image
+        run: |
+          IMAGE=${{ env.ECR_REPO }}:backend-${{ env.TAG }}
+          docker build -t $IMAGE .
+          docker tag $IMAGE ${{ env.ECR_REPO }}:backend-${{ env.VERSION }}
+          docker tag $IMAGE ${{ env.ECR_REPO }}:backend-latest
+          docker push $IMAGE
+          docker push ${{ env.ECR_REPO }}:backend-${{ env.VERSION }}
+          docker push ${{ env.ECR_REPO }}:backend-latest
 
   build-frontend:
     runs-on: ubuntu-latest
+
+    if: contains(join(fromJson(toJson(github.event.commits.*.modified)), ''), 'frontend/')
 
     defaults:
       run:
@@ -64,6 +108,36 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Build Docker image for frontend
+      - name: Set version info
+        id: vars
         run: |
-          docker build -t invoice-frontend:latest .
+          GIT_TAG=$(git describe --tags --match "frontend/v*" --abbrev=0 2>/dev/null || echo "frontend/v0.0.0")
+          VERSION=$(echo $GIT_TAG | sed 's/frontend\/v//')
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            ENV_TAG="prod"
+          else
+            ENV_TAG="dev"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=${VERSION}-${ENV_TAG}-${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push frontend image
+        run: |
+          IMAGE=${{ env.ECR_REPO }}:frontend-${{ env.TAG }}
+          docker build -t $IMAGE .
+          docker tag $IMAGE ${{ env.ECR_REPO }}:frontend-${{ env.VERSION }}
+          docker tag $IMAGE ${{ env.ECR_REPO }}:frontend-latest
+          docker push $IMAGE
+          docker push ${{ env.ECR_REPO }}:frontend-${{ env.VERSION }}
+          docker push ${{ env.ECR_REPO }}:frontend-latest
