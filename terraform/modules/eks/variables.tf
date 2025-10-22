@@ -46,5 +46,5 @@ variable ami_type {
 
 variable instance_types {
     type = list(string)
-    default = ["m3.small"]
+    default = ["t3.small"]
 }

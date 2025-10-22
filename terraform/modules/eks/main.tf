@@ -30,6 +30,13 @@ module "eks" {
       desired_size = var.desired_size
 
       iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
+
+      tags = merge(
+        var.tags,
+        {
+          Name = "${var.cluster_name}-eks-node-group"
+        }
+      )
     }
   }
 
