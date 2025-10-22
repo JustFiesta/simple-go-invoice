@@ -17,7 +17,7 @@ module "vpc" {
 module "eks" {
   source          = "../../modules/eks"
   cluster_name    = "${local.project_name}-cluster"
-  k8s_version     = "1.31"
+  k8s_version     = "1.34"
   
   public_endpoint = true
   
