@@ -13,6 +13,8 @@ module "eks" {
   iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
   node_iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
 
+  enable_irsa = false
+
   compute_config = {
     enabled    = true
     node_pools = ["general-purpose"]
