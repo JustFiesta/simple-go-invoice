@@ -6,6 +6,12 @@ terraform {
     }
   }
   required_version = ">= 1.2"
+
+  backend "s3" {
+    bucket = ""
+    key    = ""
+    region = "eu-west-1"
+  }
 }
 
 provider "aws" {
