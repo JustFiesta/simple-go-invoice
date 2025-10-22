@@ -21,13 +21,15 @@ module "eks" {
   }
 
   eks_managed_node_groups = {
-    example = {
+    group = {
       ami_type       = var.ami_type
       instance_types = var.instance_types
 
       min_size     = var.min_size
       max_size     = var.max_size
       desired_size = var.desired_size
+
+      iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
     }
   }
 
