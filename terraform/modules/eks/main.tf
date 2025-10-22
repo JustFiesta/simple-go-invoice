@@ -15,9 +15,10 @@ module "eks" {
   subnet_ids         = var.private_subnets
 
   create_iam_role      = false
-  create_node_iam_role = false
-
   iam_role_arn = data.aws_iam_role.eks_service_role.arn
+  iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
+
+  node_iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
 
   compute_config = {
     enabled    = true
