@@ -27,7 +27,7 @@ module "eks" {
 }
 
 module "ecr" {
-  source        = "../modules/ecr"
+  source        = "../../modules/ecr"
   project_name  = local.project_name
   tags          = local.tags
 }
