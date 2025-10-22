@@ -1,4 +1,4 @@
-# Reapply 7
+# Reapply 8
 locals {
   project_name = "mbocak-k8"
   tags = {
