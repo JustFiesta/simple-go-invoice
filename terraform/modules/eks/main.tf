@@ -25,37 +25,12 @@ module "eks" {
 
   access_entries = {
     cluster-admin = {
-      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/your-username"
+      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/mbocak"
       policy_associations = {
         admin-policy = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
             type = "cluster"
-          }
-        }
-      }
-    },
-
-    read-only-user = {
-      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/readonly-user"
-      policy_associations = {
-        view-policy = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    },
-
-    namespace-admin = {
-      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/NamespaceAdmin"
-      policy_associations = {
-        edit-policy = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy"
-          access_scope = {
-            type       = "namespace"
-            namespaces = ["default", "production"]
           }
         }
       }
