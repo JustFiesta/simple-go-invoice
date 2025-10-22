@@ -13,7 +13,3 @@ output "kubeconfig-certificate-authority-data" {
 output "cluster_name" {
     value = module.eks.cluster_id
 }
-
-output "node_group_role_arns" {
-    value = module.eks.node_group_arns
-}
