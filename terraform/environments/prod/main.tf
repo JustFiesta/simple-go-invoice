@@ -1,6 +1,6 @@
 # Reapply 2
 locals {
-  project_name = "mbocak-kubernetes-learning"
+  project_name = "mbocak-k8"
   tags = {
     env = "prod"
     owner = "mbocak"
