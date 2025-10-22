@@ -1,3 +1,7 @@
+data "aws_iam_role" "eks_service_role" {
+  name = "AWSServiceRoleForAmazonEKS"
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 21.0"
@@ -10,7 +14,10 @@ module "eks" {
   vpc_id             = var.vpc_id
   subnet_ids         = var.private_subnets
 
-  iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
+  create_iam_role      = false
+  create_node_iam_role = false
+
+  iam_role_arn = data.aws_iam_role.eks_service_role.arn
 
   compute_config = {
     enabled    = true
