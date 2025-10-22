@@ -8,8 +8,8 @@ terraform {
   required_version = ">= 1.2"
 
   backend "s3" {
-    bucket = ""
-    key    = ""
+    bucket = "mbocak-kubernetes-tf-state-bucket"
+    key    = "state/invoice-app/prod/terraform.tfstate"
     region = "eu-west-1"
   }
 }
