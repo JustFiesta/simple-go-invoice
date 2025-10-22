@@ -20,8 +20,18 @@ module "eks" {
     node_pools = ["general-purpose"]
   }
 
-  tags = var.tags
+  eks_managed_node_groups = {
+    example = {
+      ami_type       = var.ami_type
+      instance_types = var.instance_types
 
+      min_size     = var.min_size
+      max_size     = var.max_size
+      desired_size = var.desired_size
+    }
+  }
+
+  tags = var.tags
 
   access_entries = {
     cluster-admin = {

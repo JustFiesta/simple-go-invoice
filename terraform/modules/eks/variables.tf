@@ -23,3 +23,28 @@ variable "public_endpoint" {
     type = bool
     default = false
 }
+
+variable "min_size" {
+    type = number
+    default = 1
+}
+
+variable "max_size" {
+    type = number
+    default = 1
+}
+
+variable "desired_size" {
+    type = number
+    default = 1
+}
+
+variable ami_type {
+    type = string
+    default = "AL2023_x86_64_STANDARD"
+}
+
+variable instance_types {
+    type = list(string)
+    default = ["m3.small"]
+}
