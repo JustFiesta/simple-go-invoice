@@ -1,3 +1,4 @@
+# Reapply 2
 locals {
   project_name = "mbocak-kubernetes-learning"
   tags = {
@@ -31,4 +32,3 @@ module "ecr" {
   project_name  = local.project_name
   tags          = local.tags
 }
-
