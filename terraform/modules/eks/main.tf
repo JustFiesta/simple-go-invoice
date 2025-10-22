@@ -15,10 +15,10 @@ module "eks" {
 
   enable_irsa = false
 
-  compute_config = {
-    enabled    = true
-    node_pools = ["general-purpose"]
-  }
+#   compute_config = {
+#     enabled    = true
+#     node_pools = ["general-purpose"]
+#   }
 
   eks_managed_node_groups = {
     group = {
