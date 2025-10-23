@@ -24,22 +24,10 @@ variable "public_endpoint" {
     default = false
 }
 
-variable "min_size" {
-    type = number
-    default = 1
+variable "cluster_iam_role_arn" {
+  type = string
 }
 
-variable "max_size" {
-    type = number
-    default = 5
-}
-
-variable "desired_size" {
-    type = number
-    default = 2
-}
-
-variable instance_types {
-    type = list(string)
-    default = ["t3.small"]
+variable "node_iam_role_arn" {
+  type = string
 }
