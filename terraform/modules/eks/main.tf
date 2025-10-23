@@ -72,7 +72,6 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnets
 
-
   iam_role_permissions_boundary      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
   node_iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
 
@@ -85,7 +84,6 @@ module "eks" {
 
   compute_config = {
     enabled       = true
-    node_pools    = ["general-purpose"]
     node_role_arn = aws_iam_role.node.arn
   }
 
