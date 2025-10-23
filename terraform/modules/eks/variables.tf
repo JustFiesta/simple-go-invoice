@@ -24,10 +24,12 @@ variable "public_endpoint" {
     default = false
 }
 
-variable "cluster_iam_role_arn" {
+variable "cluster_role_name" {
   type = string
+  default = "EKSClusterRole-AutoMode"
 }
 
-variable "node_iam_role_arn" {
+variable "node_role_name" {
   type = string
+  default = "EKSNodeRole-AutoMode"
 }
