@@ -11,5 +11,5 @@ output "cluster_arn" {
 }
 
 output "cluster_name" {
-    value = module.eks.cluster_id
+    value = module.eks.cluster_name
 }
