@@ -1,12 +1,5 @@
-resource "aws_ecr_repository" "frontend" {
-  name = "${var.project_name}-frontend"
+resource "aws_ecr_repository" "this" {
+  name = "${var.project_name}"
   image_tag_mutability = "MUTABLE"
   tags = var.tags
 }
-
-resource "aws_ecr_repository" "backend" {
-  name = "${var.project_name}-backend"
-  image_tag_mutability = "MUTABLE"
-  tags = var.tags
-}
-

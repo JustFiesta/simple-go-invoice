@@ -15,8 +15,7 @@ on:
 env:
   GO_VERSION: "1.25"
   NODE_VERSION: "24.9.0"
-  FRONT_ECR_REPO: ${{ secrets.FRONT_ECR_REPO }}
-  BACK_ECR_REPO: ${{ secrets.BACK_ECR_REPO }}
+  ECR_REPO: ${{ secrets.ECR_REPO }}
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -77,13 +76,13 @@ jobs:
 
       - name: Build and push backend image
         run: |
-          IMAGE=${{ env.BACK_ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.TAG }}
+          IMAGE=${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.TAG }}
           docker build -t $IMAGE .
-          docker tag $IMAGE ${{ env.BACK_ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
-          docker tag $IMAGE ${{ env.BACK_ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
+          docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
+          docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
           docker push $IMAGE
-          docker push ${{ env.BACK_ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
-          docker push ${{ env.BACK_ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
+          docker push ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
+          docker push ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -137,10 +136,10 @@ jobs:
 
       - name: Build and push frontend image
         run: |
-          IMAGE=${{ env.FRONT_ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.TAG }}
+          IMAGE=${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.TAG }}
           docker build -t $IMAGE .
-          docker tag $IMAGE ${{ env.FRONT_ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
-          docker tag $IMAGE ${{ env.FRONT_ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
+          docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
+          docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
           docker push $IMAGE
-          docker push ${{ env.FRONT_ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
-          docker push ${{ env.FRONT_ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
+          docker push ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
+          docker push ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
