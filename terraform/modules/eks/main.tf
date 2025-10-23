@@ -72,13 +72,14 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnets
 
+
+  iam_role_permissions_boundary      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
+  node_iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
+
   enable_irsa = false
-
-  iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
-
-  create_iam_role = false
-  create_node_iam_role = false
-  create_auto_mode_iam_resources = false
+#   create_iam_role = false
+#   create_node_iam_role = false
+#   create_auto_mode_iam_resources = false
 
   iam_role_arn    = aws_iam_role.cluster.arn
 
