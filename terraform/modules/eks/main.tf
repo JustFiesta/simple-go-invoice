@@ -22,7 +22,6 @@ module "eks" {
 
   eks_managed_node_groups = {
     group = {
-      ami_type       = var.ami_type
       instance_types = var.instance_types
 
       min_size     = var.min_size

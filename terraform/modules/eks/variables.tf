@@ -31,17 +31,12 @@ variable "min_size" {
 
 variable "max_size" {
     type = number
-    default = 1
+    default = 5
 }
 
 variable "desired_size" {
     type = number
-    default = 1
-}
-
-variable ami_type {
-    type = string
-    default = "AL2023_x86_64_STANDARD"
+    default = 2
 }
 
 variable instance_types {
