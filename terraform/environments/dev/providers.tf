@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     bucket = "mbocak-kubernetes-tf-state-bucket"
-    key    = "state/invoice-app/prod/terraform.tfstate"
+    key    = "state/invoice-app/env/terraform.tfstate"
     region = "eu-west-1"
   }
 }
