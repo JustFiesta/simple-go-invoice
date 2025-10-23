@@ -27,7 +27,24 @@ jobs:
           terraform_version: 1.9.5
 
       - name: Terraform FMT
-        run: terraform fmt -recursive -check || terraform fmt -recursive
+        id: fmt
+        run: |
+          changes=$(terraform fmt -recursive -check || echo "true")
+          if [ "$changes" = "true" ]; then
+            terraform fmt -recursive
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit formatted files
+        if: steps.fmt.outputs.changes_detected == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "style: Auto-format Terraform files"
+          git push
 
       - name: Terraform Init
         working-directory: terraform/environments/prod
