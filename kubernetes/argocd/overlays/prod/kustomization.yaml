@@ -5,6 +5,7 @@ namespace: argocd
 
 resources:
   - ../../base
+  - namespace.yaml
 
 patches:
   - path: service-patch.yaml
