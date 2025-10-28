@@ -70,10 +70,7 @@ module "eks" {
   kubernetes_version = var.k8s_version
 
   vpc_id     = var.vpc_id
-  subnet_ids = {
-    public  = var.public_subnets
-    private = var.private_subnets
-  }
+  subnet_ids = concat(var.public_subnets, var.private_subnets)
 
   iam_role_permissions_boundary      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
   node_iam_role_permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/DefaultBoundaryPolicy"
