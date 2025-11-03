@@ -4,7 +4,7 @@ resource "aws_ecr_repository" "this" {
   tags = var.tags
 }
 
-resource "aws_ecr_lifecycle_policy" "backend_policy" {
+resource "aws_ecr_lifecycle_policy" "retency_policy" {
   repository = aws_ecr_repository.this.name
 
   policy = jsonencode({
@@ -14,7 +14,7 @@ resource "aws_ecr_lifecycle_policy" "backend_policy" {
         description  = "Keep last 4 tagged images only (multi-arch safe)"
         selection = {
           tagStatus     = "tagged"
-          tagPrefixList = [""]
+          tagPrefixList = ["invoice-"]
           countType     = "imageCountMoreThan"
           countNumber   = 5
         }
