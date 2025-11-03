@@ -72,11 +72,12 @@ jobs:
     if: needs.detect-changes.outputs.backend == 'true'
 
     steps:
+      - uses: actions/checkout@v3
+
       - name: Lint Backend Code
         uses: ./.github/actions/backend-lint
         with:
           go-version: ${{ needs.load-versions.outputs.go_version }}
-          working-directory: 'backend'
 
   build-backend:
     runs-on: ubuntu-latest
@@ -116,13 +117,17 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Build and push Docker image
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
+          dockerfile: backend/Dockerfile
+          context: backend
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.BACKEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
           full-version: ${{ steps.versioning.outputs.full-version }}
-          build-args: "GO_VERSION=${{ needs.load-versions.outputs.go_version }} DEBIAN_VERSION=${{ needs.load-versions.outputs.debian_version }}"
+          build-args: |
+            GO_VERSION=${{ needs.load-versions.outputs.go_version }}
+            DEBIAN_VERSION=${{ needs.load-versions.outputs.debian_version }}
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -165,10 +170,13 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Build and push Docker image
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
+          dockerfile: frontend/Dockerfile
+          context: frontend
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.FRONTEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
           full-version: ${{ steps.versioning.outputs.full-version }}
-          build-args: "NODE_VERSION=${{ needs.load-versions.outputs.node_version }}"
+          build-args: |
+            NODE_VERSION=${{ needs.load-versions.outputs.node_version }}
