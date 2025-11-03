@@ -16,8 +16,10 @@ inputs:
     required: true
   dockerfile:
     description: 'Path to the Dockerfile'
-    required: false
-    default: 'Dockerfile'
+    required: true
+  context:
+    description: 'Build context directory'
+    required: true
   build-args:
     description: 'Build arguments for Docker build'
     required: false
@@ -42,7 +44,7 @@ runs:
       id: build-push
       uses: docker/build-push-action@v6
       with:
-        context: ${{ github.workspace }}
+        context: ${{ github.workspace }}/${{ inputs.context }}
         file: ${{ github.workspace }}/${{ inputs.dockerfile }}
         platforms: ${{ inputs.platforms }}
         push: true

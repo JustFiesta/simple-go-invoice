@@ -120,6 +120,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           dockerfile: backend/Dockerfile
+          context: backend
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.BACKEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
@@ -172,6 +173,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           dockerfile: frontend/Dockerfile
+          context: frontend
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.FRONTEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
