@@ -3,28 +3,28 @@ description: 'Build, tag and push Docker image to ECR using Buildx and caching'
 
 inputs:
   ecr-repo:
+    description: 'ECR repository URI'
     required: true
-    type: string
   app-name:
+    description: 'Application name for tagging'
     required: true
-    type: string
   version:
+    description: 'Application short version'
     required: true
-    type: string
   full-version:
+    description: 'Application full version'
     required: true
-    type: string
   dockerfile:
+    description: 'Path to the Dockerfile'
     required: false
-    type: string
     default: 'Dockerfile'
   build-args:
+    description: 'Build arguments for Docker build'
     required: false
-    type: string
     default: ''
-  platforms: # optional
+  platforms:
+    description: 'Target platforms for the Docker image'
     required: false
-    type: string
     default: 'linux/amd64'
 
 outputs:
@@ -33,7 +33,7 @@ outputs:
     value: ${{ steps.build-push.outputs.tags }}
 
 runs:
-  using: composite
+  using: "composite"
   steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3

@@ -27,7 +27,7 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Baisc Actions (Init, Validate, Plan)
-        uses: ./.github/actions/terraform-init-validate-plan.yaml
+        uses: ./.github/actions/terraform-init-validate-plan
         with:
           working_directory: ${{ env.TERRAFORM_WORKING_DIR }}
 

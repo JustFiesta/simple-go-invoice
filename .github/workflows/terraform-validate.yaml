@@ -49,16 +49,16 @@ jobs:
           git push
 
       - name: Terraform Baisc Actions (Init, Validate, Plan)
-        uses: ./.github/actions/terraform-init-validate-plan.yaml
+        uses: ./.github/actions/terraform-init-validate-plan
+        id: plan
         with:
           working_directory: ${{ env.TERRAFORM_WORKING_DIR }}
 
       - name: Comment PR with Plan
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: ${{ env.TERRAFORM_WORKING_DIR }}/plan.out
           message: |
             ### Terraform Plan result
             ```
-            ${{ steps.plan.outputs.stdout }}
+            ${{ steps.plan.outputs.plan-content }}
             ```
