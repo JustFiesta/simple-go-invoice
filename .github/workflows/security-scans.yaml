@@ -1,0 +1,222 @@
+name: Security Scanning
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      scan_target:
+        description: 'Target to scan'
+        required: true
+        type: choice
+        options:
+          - all
+          - backend
+          - frontend
+          - terraform
+        default: 'all'
+      
+      severity:
+        description: 'Minimum severity level'
+        required: false
+        type: choice
+        options:
+          - CRITICAL
+          - HIGH
+          - MEDIUM
+          - LOW
+        default: 'MEDIUM'
+
+env:
+  ECR_REPO: ${{ secrets.ECR_REPO }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  BACKEND_APP_NAME: "invoice-backend"
+  FRONTEND_APP_NAME: "invoice-frontend"
+
+jobs:
+  scan-backend-image:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'schedule' || 
+      github.event.inputs.scan_target == 'all' || 
+      github.event.inputs.scan_target == 'backend'
+    
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: '${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest'
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: ${{ github.event.inputs.severity || 'CRITICAL,HIGH,MEDIUM' }}
+
+      - name: Upload backend SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-backend-results.sarif
+          category: backend-image
+
+      - name: Generate backend report
+        if: always()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: '${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest'
+          format: 'table'
+          output: 'trivy-backend-report.txt'
+          severity: ${{ github.event.inputs.severity || 'CRITICAL,HIGH,MEDIUM' }}
+
+      - name: Upload backend report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-security-report
+          path: trivy-backend-report.txt
+          retention-days: 30
+
+  scan-frontend-image:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'schedule' || 
+      github.event.inputs.scan_target == 'all' || 
+      github.event.inputs.scan_target == 'frontend'
+    
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: '${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest'
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: ${{ github.event.inputs.severity || 'CRITICAL,HIGH,MEDIUM' }}
+
+      - name: Upload frontend SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-frontend-results.sarif
+          category: frontend-image
+
+      - name: Generate frontend report
+        if: always()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: '${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest'
+          format: 'table'
+          output: 'trivy-frontend-report.txt'
+          severity: ${{ github.event.inputs.severity || 'CRITICAL,HIGH,MEDIUM' }}
+
+      - name: Upload frontend report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-security-report
+          path: trivy-frontend-report.txt
+          retention-days: 30
+
+  scan-terraform:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'schedule' || 
+      github.event.inputs.scan_target == 'all' || 
+      github.event.inputs.scan_target == 'terraform'
+    
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Scan Terraform configurations
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'terraform/'
+          format: 'sarif'
+          output: 'trivy-terraform-results.sarif'
+          exit-code: '1'
+          severity: ${{ github.event.inputs.severity || 'CRITICAL,HIGH,MEDIUM' }}
+
+      - name: Upload Terraform SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-terraform-results.sarif
+          category: terraform-config
+
+      - name: Generate Terraform report
+        if: always()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'terraform/'
+          format: 'table'
+          output: 'trivy-terraform-report.txt'
+          severity: ${{ github.event.inputs.severity || 'CRITICAL,HIGH,MEDIUM' }}
+
+      - name: Upload Terraform report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-security-report
+          path: trivy-terraform-report.txt
+          retention-days: 30
+
+  notify-results:
+    runs-on: ubuntu-latest
+    needs: [scan-backend-image, scan-frontend-image, scan-terraform]
+    if: always()
+    
+    steps:
+      - name: Check scan results
+        run: |
+          echo "Security scan completed"
+          echo "Backend: ${{ needs.scan-backend-image.result }}"
+          echo "Frontend: ${{ needs.scan-frontend-image.result }}"
+          echo "Terraform: ${{ needs.scan-terraform.result }}"
+          
+          if [[ "${{ needs.scan-backend-image.result }}" == "failure" ]] || \
+             [[ "${{ needs.scan-frontend-image.result }}" == "failure" ]] || \
+             [[ "${{ needs.scan-terraform.result }}" == "failure" ]]; then
+            echo "⚠️ Security vulnerabilities detected!"
+            exit 1
+          fi
