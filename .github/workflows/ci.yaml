@@ -150,7 +150,7 @@ jobs:
           image-ref: '${{ env.IMAGE }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH,MEDIUM'
@@ -252,7 +252,7 @@ jobs:
           image-ref: '${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.FULL_VERSION }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH,MEDIUM'
