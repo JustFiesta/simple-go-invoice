@@ -51,12 +51,12 @@ services:
       context: ./frontend
       args:
         NODE_VERSION: ${NODE_VERSION}
+        NGINX_VERSION: ${NGINX_VERSION}
     container_name: vue-frontend
     env_file:
       - .env
     expose:
-      - "5173"
-    command: ["npm", "run", "dev", "--", "--host"]
+      - "80"
     working_dir: /app
     labels:
       - "traefik.enable=true"
@@ -67,10 +67,10 @@ services:
       - "traefik.http.routers.frontend.priority=1"
       
       # Service
-      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     develop:
       watch:
-        - action: sync
+        - action: sync+restart
           path: ./frontend
           target: /app
         - action: rebuild
