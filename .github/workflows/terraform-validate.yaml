@@ -54,10 +54,20 @@ jobs:
         working-directory: terraform/environments/prod
         run: terraform validate
 
+      - name: Terraform security scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'terraform/environments/prod'
+          format: 'sarif'
+          exit-code: '1'
+
       - name: Terraform Plan
         id: plan
         working-directory: terraform/environments/prod
-        run: terraform plan -no-color -input=false || true
+        run: |
+          terraform plan -no-color -input=false -out=tfplan
+          terraform show -no-color tfplan > plan.out
 
       - name: Comment PR with Plan
         uses: marocchino/sticky-pull-request-comment@v2
