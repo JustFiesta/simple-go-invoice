@@ -22,6 +22,7 @@ func SetupRoutes(r *gin.Engine) {
     
     api := r.Group("/api")
     {
+		api.GET("/hello", controllers.Ping)
         invoices := api.Group("/invoices")
         {
             invoices.GET("", controllers.GetInvoices)

@@ -7,7 +7,7 @@ type Config struct {
 
 func Load() *Config {
     return &Config{
-        Port:   ":8000",
+        Port:   ":8080",
         DBPath: "invoices.db",
     }
 }

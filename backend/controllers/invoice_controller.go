@@ -8,6 +8,10 @@ import (
     "backend/models"
 )
 
+func Ping(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
 // GET /invoices?page=1&limit=10&search=&status=&sort=created_at&order=desc
 func GetInvoices(c *gin.Context) {
     var invoices []models.Invoice
