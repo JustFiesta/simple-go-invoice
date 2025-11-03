@@ -1,0 +1,12 @@
+.vscode
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+**/*.test
+**/*.md
+**/coverage
+**/tmp
+**/.env
+**/air.toml
