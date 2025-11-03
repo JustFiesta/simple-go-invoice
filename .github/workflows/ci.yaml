@@ -78,7 +78,6 @@ jobs:
         uses: ./.github/actions/backend-lint
         with:
           go-version: ${{ needs.load-versions.outputs.go_version }}
-          working-directory: 'backend'
 
   build-backend:
     runs-on: ubuntu-latest

@@ -5,10 +5,6 @@ inputs:
   go-version:
     description: 'The Go version to set up'
     required: true
-  working-directory:
-    description: 'The working directory for linting'
-    required: false
-    default: 'backend'
 
 runs:
   using: "composite"
@@ -19,12 +15,13 @@ runs:
       with:
         go-version: ${{ inputs.go-version }}
 
-    - name: Install dependencies
-      shell: bash
+    - name: Run go mod tidy
       run: go mod tidy
+      shell: bash
+      working-directory: ${{ github.workspace }}/backend
 
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: backend
         args: --timeout=3m
