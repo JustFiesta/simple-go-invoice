@@ -8,6 +8,8 @@ on:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  TF_VERSION: 1.9.5
+  TERRAFORM_WORKING_DIR: 'terraform/environments/prod'
 
 jobs:
   terraform:
@@ -24,7 +26,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.5
+          terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform FMT
         id: fmt
@@ -46,33 +48,15 @@ jobs:
           git commit -m "style: Auto-format Terraform files"
           git push
 
-      - name: Terraform Init
-        working-directory: terraform/environments/prod
-        run: terraform init -backend=false
-
-      - name: Terraform Validate
-        working-directory: terraform/environments/prod
-        run: terraform validate
-
-      - name: Terraform security scan
-        uses: aquasecurity/trivy-action@0.28.0
+      - name: Terraform Baisc Actions (Init, Validate, Plan)
+        uses: ./.github/workflows/reusable/terraform-init-validate-plan.yaml
         with:
-          scan-type: 'fs'
-          scan-ref: 'terraform/environments/prod'
-          format: 'sarif'
-          exit-code: '1'
-
-      - name: Terraform Plan
-        id: plan
-        working-directory: terraform/environments/prod
-        run: |
-          terraform plan -no-color -input=false -out=tfplan
-          terraform show -no-color tfplan > plan.out
+          working_directory: ${{ env.TERRAFORM_WORKING_DIR }}
 
       - name: Comment PR with Plan
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: terraform/environments/prod/plan.out
+          path: ${{ env.TERRAFORM_WORKING_DIR }}/plan.out
           message: |
             ### Terraform Plan result
             ```

@@ -1,0 +1,48 @@
+name: 'Terraform Validate'
+description: 'Validate Terraform configuration'
+
+inputs:
+  working-directory:
+    required: false
+    type: string
+    default: '.'
+  plan-file:
+    required: false
+    type: string
+    default: 'tfplan'
+
+outputs:
+  plan-file:
+    description: 'Path to the plan file'
+    value: ${{ inputs.working-directory }}/${{ inputs.plan-file }}
+  plan-output:
+    description: 'Path to the plan output file'
+    value: ${{ inputs.working-directory }}/plan.out
+
+runs:
+  using: composite
+  steps:
+    - name: Terraform Init
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform init
+
+    - name: Terraform Validate
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform validate
+
+    - name: Terraform Plan
+      id: plan
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        terraform plan -no-color -input=false -out=${{ inputs.plan-file }}
+        terraform show -no-color ${{ inputs.plan-file }} > plan.out
+
+    - name: Upload plan artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: ${{ inputs.working-directory }}/plan.out
+        retention-days: 1
