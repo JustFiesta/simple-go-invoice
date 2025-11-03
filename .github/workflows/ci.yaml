@@ -69,7 +69,7 @@ jobs:
   lint-backend:
     needs: [detect-changes, load-versions]
     if: needs.detect-changes.outputs.backend == 'true'
-    uses: ./.github/workflows/actions/backend-lint.yaml
+    uses: ./.github/actions/backend-lint.yaml
     with:
       go-version: ${{ needs.load-versions.outputs.go_version }}
       working-directory: 'backend'
@@ -99,20 +99,20 @@ jobs:
 
       - name: Generate version
         id: versioning
-        uses: ./.github/workflows/actions/versioning.yaml
+        uses: ./.github/actions/versioning.yaml
         with:
           tag-prefix: 'backend/v'
           branch: ${{ github.ref_name }}
 
       - name: AWS setup
-        uses: ./.github/workflows/actions/aws-setup.yaml
+        uses: ./.github/actions/aws-setup.yaml
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Build and push Docker image
-        uses: ./.github/workflows/actions/docker-build-push.yaml
+        uses: ./.github/actions/docker-build-push.yaml
         with:
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.BACKEND_APP_NAME }}
@@ -148,20 +148,20 @@ jobs:
 
       - name: Generate version
         id: versioning
-        uses: ./.github/workflows/actions/versioning.yaml
+        uses: ./.github/actions/versioning.yaml
         with:
           tag-prefix: 'frontend/v'
           branch: ${{ github.ref_name }}
 
       - name: AWS setup
-        uses: ./.github/workflows/actions/aws-setup.yaml
+        uses: ./.github/actions/aws-setup.yaml
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Build and push Docker image
-        uses: ./.github/workflows/actions/docker-build-push.yaml
+        uses: ./.github/actions/docker-build-push.yaml
         with:
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.FRONTEND_APP_NAME }}
