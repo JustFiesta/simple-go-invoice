@@ -71,6 +71,9 @@ jobs:
     needs: [detect-changes, load-versions]
     if: needs.detect-changes.outputs.backend == 'true'
 
+    permissions:
+      security-events: write
+
     defaults:
       run:
         working-directory: backend
@@ -170,6 +173,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-changes, load-versions]
     if: needs.detect-changes.outputs.frontend == 'true'
+
+    permissions:
+      security-events: write
 
     defaults:
       run:
