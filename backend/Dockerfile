@@ -19,6 +19,7 @@ RUN useradd -u 1000 -s /bin/nologin app
 USER app
 
 WORKDIR /app
+RUN mkdir -p /app/data
 
 COPY --from=build --chown=app:app --chmod=755 /app/backend /app/
 

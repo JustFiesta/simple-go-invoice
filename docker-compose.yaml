@@ -29,6 +29,8 @@ services:
     expose: 
       - "8080"
     working_dir: /app
+    volumes:
+      - backend_data:/app/data
     labels:
       - "traefik.enable=true"  # Enable Traefik for this service
       
@@ -75,3 +77,7 @@ services:
           target: /app
         - action: rebuild
           path: ./frontend
+
+volumes:
+  backend_data:
+    driver: local
