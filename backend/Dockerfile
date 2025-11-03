@@ -24,4 +24,4 @@ COPY --from=build --chown=app:app --chmod=755 /app/backend /app/
 
 EXPOSE 8080
 
-CMD ["/app/backend"]
+ENTRYPOINT ["/app/backend"]
