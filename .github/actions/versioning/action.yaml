@@ -27,7 +27,6 @@ runs:
         tag_prefix: ${{ inputs.tag-prefix }}
         major_pattern: '/(MAJOR)|(BREAKING CHANGE)/'
         minor_pattern: '/(feat)/'
-        patch_pattern: '/(fix)|(chore)|(refactor)/'
         version_format: '${major}.${minor}.${patch}'
 
     - name: Set versions
