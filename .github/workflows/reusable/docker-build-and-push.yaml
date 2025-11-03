@@ -1,0 +1,67 @@
+name: 'Docker Build and Push'
+description: 'Build, tag and push Docker image to ECR'
+
+inputs:
+  ecr-repo:
+    required: true
+    type: string
+  app-name:
+    required: true
+    type: string
+  version:
+    required: true
+    type: string
+  full-version:
+    required: true
+    type: string
+  dockerfile:
+    required: false
+    type: string
+    default: 'Dockerfile'
+  build-args:
+    required: false
+    type: string
+    default: ''
+
+outputs:
+  image:
+    description: 'Built image tag'
+    value: ${{ steps.build.outputs.image }}
+
+runs:
+  using: composite
+  steps:
+    - name: Build Docker image
+      id: build
+      shell: bash
+      run: |
+        IMAGE_TAG=${{ inputs.full-version }}
+        IMAGE=${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${IMAGE_TAG}
+        
+        echo "Building image: $IMAGE"
+        
+        # Parse build args
+        BUILD_ARGS=""
+        if [ -n "${{ inputs.build-args }}" ]; then
+          for arg in ${{ inputs.build-args }}; do
+            BUILD_ARGS="${BUILD_ARGS} --build-arg ${arg}"
+          done
+        fi
+        
+        docker build \
+          --file ${{ inputs.dockerfile }} \
+          ${BUILD_ARGS} \
+          -t $IMAGE .
+        
+        docker tag $IMAGE ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${{ inputs.version }}
+        docker tag $IMAGE ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-latest
+        
+        echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+        echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+
+    - name: Push Docker image to ECR
+      shell: bash
+      run: |
+        docker push ${{ env.IMAGE }}
+        docker push ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${{ inputs.version }}
+        docker push ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-latest

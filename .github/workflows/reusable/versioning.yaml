@@ -1,0 +1,46 @@
+name: 'Generate Semantic Version'
+description: 'Generate semantic version with environment suffix'
+
+inputs:
+  tag-prefix:
+    required: true
+    type: string
+    default: 'v'
+  branch:
+    required: true
+    type: string
+
+outputs:
+  version:
+    description: 'Semantic version'
+    value: ${{ steps.version.outputs.version }}
+  full-version:
+    description: 'Full version with environment and commit hash'
+    value: ${{ steps.set-versions.outputs.full-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Generate semantic version
+      id: version
+      uses: paulhatch/semantic-version@v5.4.0
+      with:
+        tag_prefix: ${{ inputs.tag-prefix }}
+        major_pattern: '/(MAJOR)|(BREAKING CHANGE)/'
+        minor_pattern: '/(feat)/'
+        version_format: '${major}.${minor}.${patch}'
+
+    - name: Set versions
+      id: set-versions
+      shell: bash
+      run: |
+        SHORT_SHA=$(git rev-parse --short HEAD)
+        if [ "${{ inputs.branch }}" = "main" ]; then
+          ENV_SUFFIX="prod"
+        else
+          ENV_SUFFIX="dev"
+        fi
+        echo "version=${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+        echo "full-version=${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+        echo "Version: ${{ steps.version.outputs.version }}"
+        echo "Full version: ${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
