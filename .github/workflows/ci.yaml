@@ -166,7 +166,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Build and push Docker image
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.FRONTEND_APP_NAME }}
