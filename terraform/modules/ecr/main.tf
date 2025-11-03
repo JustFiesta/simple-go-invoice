@@ -1,7 +1,7 @@
 resource "aws_ecr_repository" "this" {
-  name = "${var.project_name}"
+  name                 = var.project_name
   image_tag_mutability = "MUTABLE"
-  tags = var.tags
+  tags                 = var.tags
 }
 
 resource "aws_ecr_lifecycle_policy" "retency_policy" {
@@ -11,7 +11,7 @@ resource "aws_ecr_lifecycle_policy" "retency_policy" {
     rules = [
       {
         rulePriority = 1
-        description  = "Keep last 4 tagged images only (multi-arch safe)"
+        description  = "Keep last 5 tagged images (multi-arch safe)"
         selection = {
           tagStatus     = "tagged"
           tagPrefixList = ["invoice-"]
@@ -26,7 +26,9 @@ resource "aws_ecr_lifecycle_policy" "retency_policy" {
         rulePriority = 2
         description  = "Expire untagged images"
         selection = {
-          tagStatus = "untagged"
+          tagStatus   = "untagged"
+          countType   = "sinceImagePushed"
+          countNumber = 1
         }
         action = {
           type = "expire"
