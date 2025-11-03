@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'terraform/environments/**'
+      - 'terraform/modules/**'
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
