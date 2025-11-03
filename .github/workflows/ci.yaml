@@ -87,7 +87,7 @@ jobs:
         run: go mod tidy
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v8
 
       - name: Build backend binary
         run: go build -o invoice-backend main.go
@@ -184,7 +184,7 @@ jobs:
         run: npm install
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run eslint
 
       - name: Run Vue type checking
         run: npm run type-check
