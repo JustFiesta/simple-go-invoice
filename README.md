@@ -1,7 +1,16 @@
+
 # Simple GO invoice
 
 A simple single-page application (SPA) demonstrating a basic full-stack setup using **Go (Gin)** for the backend and **Vue 3 + Vite + Vuetify** for the frontend.  
 The project serves as a lightweight example of a RESTful API communicating with a modern JavaScript frontend.
+
+---
+
+## Deployment Status
+
+[![CI Pipeline](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/ci.yaml)
+
+[![Terraform Apply](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/terraform-apply.yaml/badge.svg)](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/terraform-apply.yaml)
 
 ---
 
