@@ -23,11 +23,28 @@ env:
   FRONTEND_APP_NAME: "invoice-frontend"
 
 jobs:
-  build-backend:
-
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          backend:
+            - 'backend/**'
+          frontend:
+            - 'frontend/**'
 
-    if: contains(join(fromJson(toJson(github.event.commits.*.modified)), ''), 'backend/')
+  build-backend:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
 
     defaults:
       run:
@@ -44,25 +61,34 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
-      # - name: Run backend tests
-      #   run: go test 
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
 
       - name: Build backend binary
         run: go build -o invoice-backend main.go
 
-      - name: Set version info
-        id: vars
+      - name: Generate semantic version
+        id: version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "backend/v"
+          major_pattern: "/(MAJOR)|(BREAKING CHANGE)/"
+          minor_pattern: "/(feat)/"
+          version_format: "${major}.${minor}.${patch}"
+    
+      - name: Set backend versions
+        id: set-backend-versions
         run: |
-          GIT_TAG=$(git describe --tags --match "backend/v*" --abbrev=0 2>/dev/null || echo "backend/v0.0.0")
-          VERSION=$(echo $GIT_TAG | sed 's/backend\/v//')
-          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          SHORT_SHA=$(git rev-parse --short HEAD)
           if [ "${{ github.ref_name }}" = "main" ]; then
-            ENV_TAG="prod"
+            ENV_SUFFIX="prod"
           else
-            ENV_TAG="dev"
+            ENV_SUFFIX="dev"
           fi
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "TAG=${VERSION}-${ENV_TAG}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "VERSION=${{ steps.backend-version.outputs.version }}" >> $GITHUB_ENV
+          echo "FULL_VERSION=${{ steps.backend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "Backend version: ${{ steps.backend-version.outputs.version }}"
+          echo "Backend full version: ${{ steps.backend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -76,21 +102,27 @@ jobs:
 
       - name: Build backend image
         run: |
-          IMAGE=${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.TAG }}
+          IMAGE_TAG=${{ env.FULL_VERSION }}
+          IMAGE=${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${IMAGE_TAG}
+          
+          echo "Building image: $IMAGE"
           docker build -t $IMAGE .
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
+          
+          echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}" >> $GITHUB_ENV
 
       - name: Trivy scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: '${{ env.TAG }}'
+          image-ref: '${{ env.IMAGE }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '0'
-          ignore-unfixed: true
+          exit-code: '1'
+          ignore-unfixed: false
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Upload Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -99,14 +131,14 @@ jobs:
 
       - name: Push backend image to ECR
         run: |
-          docker push $IMAGE
-          docker push ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
+          docker push ${{ env.IMAGE }}
+          docker push ${{ env.IMAGE_VERSION }}
           docker push ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
 
   build-frontend:
     runs-on: ubuntu-latest
-
-    if: contains(join(fromJson(toJson(github.event.commits.*.modified)), ''), 'frontend/')
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
 
     defaults:
       run:
@@ -123,25 +155,40 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Vue type checking
+        run: npm run type-check
+
       - name: Run frontend tests
         run: npm run test || echo "No frontend tests defined"
 
       - name: Build frontend
         run: npm run build
 
-      - name: Set version info
-        id: vars
+      - name: Generate semantic version
+        id: version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "frontend/v"
+          major_pattern: "/(MAJOR)|(BREAKING CHANGE)/"
+          minor_pattern: "/(feat)/"
+          version_format: "${major}.${minor}.${patch}"
+    
+      - name: Set versions
+        id: set-frontend-versions
         run: |
-          GIT_TAG=$(git describe --tags --match "frontend/v*" --abbrev=0 2>/dev/null || echo "frontend/v0.0.0")
-          VERSION=$(echo $GIT_TAG | sed 's/frontend\/v//')
-          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          SHORT_SHA=$(git rev-parse --short HEAD)
           if [ "${{ github.ref_name }}" = "main" ]; then
-            ENV_TAG="prod"
+            ENV_SUFFIX="prod"
           else
-            ENV_TAG="dev"
+            ENV_SUFFIX="dev"
           fi
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "TAG=${VERSION}-${ENV_TAG}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "VERSION=${{ steps.frontend-version.outputs.version }}" >> $GITHUB_ENV
+          echo "FULL_VERSION=${{ steps.frontend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "Frontend version: ${{ steps.frontend-version.outputs.version }}"
+          echo "Frontend full version: ${{ steps.frontend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -155,21 +202,27 @@ jobs:
 
       - name: Build and push frontend image
         run: |
-          IMAGE=${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.TAG }}
+          IMAGE_TAG=${{ env.FULL_VERSION }}
+          IMAGE=${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${IMAGE_TAG}
+          
+          echo "Building image: $IMAGE"
           docker build -t $IMAGE .
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
+          
+          echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}" >> $GITHUB_ENV
 
       - name: Trivy scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: '${{ env.TAG }}'
+          image-ref: '${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.FULL_VERSION }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '0'
-          ignore-unfixed: true
+          exit-code: '1'
+          ignore-unfixed: false
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Upload Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -178,6 +231,6 @@ jobs:
 
       - name: Push frontend image to ECR
         run: |
-          docker push $IMAGE
-          docker push ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
+          docker push ${{ env.IMAGE }}
+          docker push ${{ env.IMAGE_VERSION }}
           docker push ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
