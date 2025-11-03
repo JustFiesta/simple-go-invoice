@@ -1,5 +1,5 @@
 name: 'Docker Build and Push'
-description: 'Build, tag and push Docker image to ECR'
+description: 'Build, tag and push Docker image to ECR using Buildx and caching'
 
 inputs:
   ecr-repo:
@@ -22,46 +22,34 @@ inputs:
     required: false
     type: string
     default: ''
+  platforms: # optional
+    required: false
+    type: string
+    default: 'linux/amd64'
 
 outputs:
   image:
     description: 'Built image tag'
-    value: ${{ steps.build.outputs.image }}
+    value: ${{ steps.build-push.outputs.tags }}
 
 runs:
   using: composite
   steps:
-    - name: Build Docker image
-      id: build
-      shell: bash
-      run: |
-        IMAGE_TAG=${{ inputs.full-version }}
-        IMAGE=${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${IMAGE_TAG}
-        
-        echo "Building image: $IMAGE"
-        
-        # Parse build args
-        BUILD_ARGS=""
-        if [ -n "${{ inputs.build-args }}" ]; then
-          for arg in ${{ inputs.build-args }}; do
-            BUILD_ARGS="${BUILD_ARGS} --build-arg ${arg}"
-          done
-        fi
-        
-        docker build \
-          --file ${{ inputs.dockerfile }} \
-          ${BUILD_ARGS} \
-          -t $IMAGE .
-        
-        docker tag $IMAGE ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${{ inputs.version }}
-        docker tag $IMAGE ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-latest
-        
-        echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-        echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-    - name: Push Docker image to ECR
-      shell: bash
-      run: |
-        docker push ${{ env.IMAGE }}
-        docker push ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${{ inputs.version }}
-        docker push ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-latest
+    - name: Build and Push with Docker Buildx
+      id: build-push
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ${{ inputs.dockerfile }}
+        platforms: ${{ inputs.platforms }}
+        push: true
+        tags: |
+          ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${{ inputs.full-version }}
+          ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-${{ inputs.version }}
+          ${{ inputs.ecr-repo }}:${{ inputs.app-name }}-latest
+        cache-from: type=registry,ref=${{ inputs.ecr-repo }}:buildcache
+        cache-to: type=registry,ref=${{ inputs.ecr-repo }}:buildcache,mode=max
+        build-args: ${{ inputs.build-args }}
