@@ -74,12 +74,31 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push backend image
+      - name: Build backend image
         run: |
           IMAGE=${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.TAG }}
           docker build -t $IMAGE .
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: '${{ env.TAG }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Push backend image to ECR
+        run: |
           docker push $IMAGE
           docker push ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-${{ env.VERSION }}
           docker push ${{ env.ECR_REPO }}:${{ env.BACKEND_APP_NAME }}-latest
@@ -140,6 +159,25 @@ jobs:
           docker build -t $IMAGE .
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
           docker tag $IMAGE ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: '${{ env.TAG }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Push frontend image to ECR
+        run: |
           docker push $IMAGE
           docker push ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-${{ env.VERSION }}
           docker push ${{ env.ECR_REPO }}:${{ env.FRONTEND_APP_NAME }}-latest
