@@ -49,7 +49,7 @@ jobs:
           git push
 
       - name: Terraform Baisc Actions (Init, Validate, Plan)
-        uses: ./.github/workflows/reusable/terraform-init-validate-plan.yaml
+        uses: ./.github/workflows/actions/terraform-init-validate-plan.yaml
         with:
           working_directory: ${{ env.TERRAFORM_WORKING_DIR }}
 
