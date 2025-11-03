@@ -13,9 +13,10 @@ resource "aws_ecr_lifecycle_policy" "backend_policy" {
         rulePriority = 1
         description  = "Keep last 4 tagged images only (multi-arch safe)"
         selection = {
-          tagStatus   = "tagged"
-          countType   = "imageCountMoreThan"
-          countNumber = 5
+          tagStatus     = "tagged"
+          tagPrefixList = [""]
+          countType     = "imageCountMoreThan"
+          countNumber   = 5
         }
         action = {
           type = "expire"
@@ -23,7 +24,7 @@ resource "aws_ecr_lifecycle_policy" "backend_policy" {
       },
       {
         rulePriority = 2
-        description  = "Expire untagged images (architektur pomocnicze)"
+        description  = "Expire untagged images"
         selection = {
           tagStatus = "untagged"
         }
