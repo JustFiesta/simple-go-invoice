@@ -30,7 +30,7 @@ jobs:
       - name: Terraform Baisc Actions (Init, Validate, Plan)
         uses: ./.github/actions/terraform-init-validate-plan
         with:
-          working_directory: ${{ env.TERRAFORM_WORKING_DIR }}
+          working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
 
       - name: Terraform Apply
         working-directory: terraform/environments/prod
