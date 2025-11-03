@@ -88,6 +88,9 @@ jobs:
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
+        with:
+            working-directory: backend
+            args: --timeout=3m
 
       - name: Build backend binary
         run: go build -o invoice-backend main.go
