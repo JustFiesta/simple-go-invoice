@@ -42,8 +42,8 @@ runs:
       id: build-push
       uses: docker/build-push-action@v6
       with:
-        context: .
-        file: ${{ inputs.dockerfile }}
+        context: ${{ github.workspace }}
+        file: ${{ github.workspace }}/${{ inputs.dockerfile }}
         platforms: ${{ inputs.platforms }}
         push: true
         tags: |

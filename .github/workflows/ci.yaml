@@ -119,6 +119,7 @@ jobs:
       - name: Build and push Docker image
         uses: ./.github/actions/docker-build-and-push
         with:
+          dockerfile: backend/Dockerfile
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.BACKEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
@@ -168,6 +169,7 @@ jobs:
       - name: Build and push Docker image
         uses: ./.github/actions/docker-build-and-push
         with:
+          dockerfile: frontend/Dockerfile
           ecr-repo: ${{ env.ECR_REPO }}
           app-name: ${{ env.FRONTEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
