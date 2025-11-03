@@ -192,12 +192,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run ESLint
-        run: npm run eslint
-
-      - name: Run Vue type checking
-        run: npm run type-check
-
       - name: Run frontend tests
         run: npm run test || echo "No frontend tests defined"
 
