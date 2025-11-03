@@ -113,10 +113,10 @@ jobs:
           else
             ENV_SUFFIX="dev"
           fi
-          echo "VERSION=${{ steps.backend-version.outputs.version }}" >> $GITHUB_ENV
-          echo "FULL_VERSION=${{ steps.backend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_ENV
-          echo "Backend version: ${{ steps.backend-version.outputs.version }}"
-          echo "Backend full version: ${{ steps.backend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
+          echo "VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
+          echo "FULL_VERSION=${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "Backend version: ${{ steps.version.outputs.version }}"
+          echo "Backend full version: ${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -216,10 +216,10 @@ jobs:
           else
             ENV_SUFFIX="dev"
           fi
-          echo "VERSION=${{ steps.frontend-version.outputs.version }}" >> $GITHUB_ENV
-          echo "FULL_VERSION=${{ steps.frontend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_ENV
-          echo "Frontend version: ${{ steps.frontend-version.outputs.version }}"
-          echo "Frontend full version: ${{ steps.frontend-version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
+          echo "VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
+          echo "FULL_VERSION=${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "Frontend version: ${{ steps.version.outputs.version }}"
+          echo "Frontend full version: ${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
