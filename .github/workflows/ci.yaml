@@ -124,7 +124,9 @@ jobs:
           app-name: ${{ env.BACKEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
           full-version: ${{ steps.versioning.outputs.full-version }}
-          build-args: "GO_VERSION=${{ needs.load-versions.outputs.go_version }} DEBIAN_VERSION=${{ needs.load-versions.outputs.debian_version }}"
+          build-args: |
+            GO_VERSION=${{ needs.load-versions.outputs.go_version }}
+            DEBIAN_VERSION=${{ needs.load-versions.outputs.debian_version }}
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -174,4 +176,5 @@ jobs:
           app-name: ${{ env.FRONTEND_APP_NAME }}
           version: ${{ steps.versioning.outputs.version }}
           full-version: ${{ steps.versioning.outputs.full-version }}
-          build-args: "NODE_VERSION=${{ needs.load-versions.outputs.node_version }}"
+          build-args: |
+            NODE_VERSION=${{ needs.load-versions.outputs.node_version }}
