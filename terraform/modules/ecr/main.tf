@@ -24,11 +24,12 @@ resource "aws_ecr_lifecycle_policy" "retency_policy" {
       },
       {
         rulePriority = 2
-        description  = "Expire untagged images"
+        description  = "Expire untagged images older than 1 day"
         selection = {
           tagStatus   = "untagged"
           countType   = "sinceImagePushed"
           countNumber = 1
+          countUnit   = "days"
         }
         action = {
           type = "expire"
