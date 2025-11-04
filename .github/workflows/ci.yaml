@@ -194,7 +194,6 @@ jobs:
 
       - name: Update package.json version
         run: |
-          cd frontend
           VERSION=${{ steps.versioning.outputs.version }}
           jq ".version = \"${VERSION}\"" package.json > package.json.tmp && mv package.json.tmp package.json
 
