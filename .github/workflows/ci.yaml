@@ -100,7 +100,7 @@ jobs:
           cache-dependency-path: backend/go.sum
 
       - name: Install dependencies
-        run: go mod tidy
+        run: go mod download
 
       - name: Build backend binary
         run: go build -o invoice-backend main.go
