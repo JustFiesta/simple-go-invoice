@@ -180,7 +180,7 @@ jobs:
           node-version: ${{ needs.load-versions.outputs.node_version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run frontend tests
         run: npm run test || echo "No frontend tests defined"
