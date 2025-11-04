@@ -59,6 +59,9 @@ services:
       args:
         NODE_VERSION: ${NODE_VERSION}
         NGINX_VERSION: ${NGINX_VERSION}
+        APP_VERSION: ${APP_VERSION}
+        GIT_COMMIT: ${GIT_COMMIT}
+        BUILD_DATE: ${BUILD_DATE}
     container_name: vue-frontend
     env_file:
       - .env
