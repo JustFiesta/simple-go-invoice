@@ -97,6 +97,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ needs.load-versions.outputs.go_version }}
+          cache-dependency-path: backend/go.sum
 
       - name: Install dependencies
         run: go mod tidy
@@ -110,6 +111,24 @@ jobs:
         with:
           tag-prefix: 'backend/v'
           branch: ${{ github.ref_name }}
+
+      - name: Create and push tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          TAG="${{ steps.versioning.outputs.tag-name }}"
+          echo "Creating tag: ${TAG}"
+          
+          # Check if tag already exists
+          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists, skipping"
+          else
+            git tag -a "${TAG}" -m "Backend release ${{ steps.versioning.outputs.version }}"
+            git push origin "${TAG}"
+            echo "Tag ${TAG} created and pushed"
+          fi
 
       - name: AWS setup
         uses: ./.github/actions/aws-setup
@@ -165,6 +184,24 @@ jobs:
         with:
           tag-prefix: 'frontend/v'
           branch: ${{ github.ref_name }}
+
+      - name: Create and push tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          TAG="${{ steps.versioning.outputs.tag-name }}"
+          echo "Creating tag: ${TAG}"
+          
+          # Check if tag already exists
+          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists, skipping"
+          else
+            git tag -a "${TAG}" -m "Frontend release ${{ steps.versioning.outputs.version }}"
+            git push origin "${TAG}"
+            echo "Tag ${TAG} created and pushed"
+          fi
 
       - name: AWS setup
         uses: ./.github/actions/aws-setup
