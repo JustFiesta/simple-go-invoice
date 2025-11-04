@@ -16,11 +16,6 @@ runs:
         go-version: ${{ inputs.go-version }}
         cache-dependency-path: backend/go.sum
 
-    - name: Install dependencies
-      shell: bash
-      working-directory: backend
-      run: go mod download
-
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
