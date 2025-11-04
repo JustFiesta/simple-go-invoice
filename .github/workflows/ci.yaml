@@ -97,6 +97,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ needs.load-versions.outputs.go_version }}
+          cache-dependency-path: backend/go.sum
 
       - name: Install dependencies
         run: go mod tidy
