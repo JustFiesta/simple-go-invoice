@@ -25,7 +25,11 @@ func SetupRoutes(r *gin.Engine) {
 			invoices.PUT("/:id", controllers.UpdateInvoice)
 			invoices.DELETE("/:id", controllers.DeleteInvoice)
 			invoices.GET("/:id/pdf", controllers.GetInvoicePDF)
+
 			invoices.POST("/:id/items", controllers.AddInvoiceItem)
+			invoices.GET("/:id/items", controllers.GetInvoiceItems)
+			invoices.PUT("/:id/items/:itemId", controllers.UpdateInvoiceItem)
+			invoices.DELETE("/:id/items/:itemId", controllers.DeleteInvoiceItem)
 		}
 	}
 }

@@ -252,37 +252,3 @@ func GetInvoicePDF(c *gin.Context) {
 
     c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }
-
-// AddInvoiceItem - POST /invoices/:id/items
-func AddInvoiceItem(c *gin.Context) {
-	id := c.Param("id")
-	var invoice models.Invoice
-
-	if err := database.DB.First(&invoice, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
-		return
-	}
-
-	var item models.InvoiceItem
-	if err := c.ShouldBindJSON(&item); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	item.InvoiceID = invoice.ID
-
-	if err := database.DB.Create(&item).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add item"})
-		return
-	}
-
-	// Update invoice total
-	var total float64
-	database.DB.Model(&models.InvoiceItem{}).
-		Where("invoice_id = ?", invoice.ID).
-		Select("SUM(quantity * unit_price)").Scan(&total)
-	invoice.Amount = total
-	database.DB.Save(&invoice)
-
-	c.JSON(http.StatusCreated, item)
-}
