@@ -183,10 +183,7 @@ jobs:
         run: |
           rm -rf node_modules
           rm -f package-lock.json
-        
-          npm cache clean --force
-        
-          npm install --no-optional --prefer-offline
+          npm install
 
       - name: Run frontend tests
         run: npm run test || echo "No frontend tests defined"
