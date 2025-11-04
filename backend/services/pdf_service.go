@@ -47,7 +47,7 @@ func GenerateInvoicePDF(inv models.Invoice) ([]byte, error) {
 		row := []string{
 			fmt.Sprintf("%d", i+1),
 			item.Description,
-			fmt.Sprintf("%.2f", item.Quantity),
+			fmt.Sprintf("%d", item.Quantity),
 			fmt.Sprintf("%.2f", item.UnitPrice),
 			fmt.Sprintf("%.0f%%", item.VATRate),
 			fmt.Sprintf("%.2f", grossValue),
