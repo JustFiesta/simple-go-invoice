@@ -16,6 +16,9 @@ outputs:
   full-version:
     description: 'Full version with environment and commit hash'
     value: ${{ steps.set-versions.outputs.full-version }}
+  tag-name:
+    description: 'Full tag name with prefix'
+    value: ${{ steps.set-versions.outputs.tag-name }}
 
 runs:
   using: "composite"
@@ -39,7 +42,13 @@ runs:
         else
           ENV_SUFFIX="dev"
         fi
-        echo "version=${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
-        echo "full-version=${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_OUTPUT
-        echo "Version: ${{ steps.version.outputs.version }}"
-        echo "Full version: ${{ steps.version.outputs.version }}-${ENV_SUFFIX}-${SHORT_SHA}"
+        VERSION="${{ steps.version.outputs.version }}"
+        TAG_NAME="${{ inputs.tag-prefix }}${VERSION}"
+        
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "full-version=${VERSION}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+        echo "tag-name=${TAG_NAME}" >> $GITHUB_OUTPUT
+        
+        echo "Version: ${VERSION}"
+        echo "Full version: ${VERSION}-${ENV_SUFFIX}-${SHORT_SHA}"
+        echo "Tag name: ${TAG_NAME}"
