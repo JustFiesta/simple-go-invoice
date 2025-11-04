@@ -80,7 +80,7 @@ docker compose watch
 
 ```txt
 Frontend: http://localhost:8000
-Backend API: http://localhost:8000/api/hello
+Backend API: http://localhost:8000/api/health
 ```
 
 ---
