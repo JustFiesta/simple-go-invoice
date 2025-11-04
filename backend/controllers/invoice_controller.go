@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,9 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Ping - health check endpoint
+// Ping - health check endpoint (renamed from /hello to /health)
 func Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"service": "invoice-api",
+		"version": "1.0.0",
+	})
 }
 
 // GetInvoices - GET /invoices?page=1&limit=10&search=&status=&sort=created_at&order=desc
@@ -80,22 +85,32 @@ func GetInvoices(c *gin.Context) {
 	// Count total records for pagination
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count invoices"})
+		response := models.ErrorResponse(
+			http.StatusInternalServerError,
+			"Failed to count invoices",
+			err.Error(),
+		)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	// Query with sorting, limit and offset
 	if err := query.Order(sort + " " + order).Limit(limit).Offset(offset).Find(&invoices).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch invoices"})
+		response := models.ErrorResponse(
+			http.StatusInternalServerError,
+			"Failed to fetch invoices",
+			err.Error(),
+		)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data":  invoices,
-		"total": total,
-		"page":  page,
-		"limit": limit,
-	})
+	c.Header("Cache-Control", "public, max-age=60")
+
+	selfLink := fmt.Sprintf("/api/invoices?page=%d&limit=%d", page, limit)
+	response := models.PaginatedResponse(invoices, page, limit, total, selfLink)
+	
+	c.JSON(http.StatusOK, response)
 }
 
 // GetInvoiceByID - GET /invoices/:id
@@ -104,11 +119,29 @@ func GetInvoiceByID(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := database.DB.First(&invoice, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		response := models.ErrorResponse(
+			http.StatusNotFound,
+			"Invoice not found",
+			fmt.Sprintf("Invoice with ID %s does not exist", id),
+		)
+		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, invoice)
+	c.Header("Cache-Control", "public, max-age=300")
+
+	related := map[string]string{
+		"items": fmt.Sprintf("/api/invoices/%s/items", id),
+		"pdf":   fmt.Sprintf("/api/invoices/%s/pdf", id),
+	}
+
+	response := models.SingleResourceResponse(
+		invoice,
+		fmt.Sprintf("/api/invoices/%s", id),
+		related,
+	)
+
+	c.JSON(http.StatusOK, response)
 }
 
 // CreateInvoice - POST /invoices
@@ -116,13 +149,23 @@ func CreateInvoice(c *gin.Context) {
 	var invoice models.Invoice
 
 	if err := c.ShouldBindJSON(&invoice); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := models.ErrorResponse(
+			http.StatusBadRequest,
+			"Invalid request body",
+			err.Error(),
+		)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	// Validate required fields
 	if err := validateInvoice(&invoice); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := models.ErrorResponse(
+			http.StatusUnprocessableEntity,
+			"Validation failed",
+			err.Error(),
+		)
+		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
@@ -130,16 +173,40 @@ func CreateInvoice(c *gin.Context) {
 	var count int64
 	database.DB.Model(&models.Invoice{}).Where("invoice_number = ?", invoice.InvoiceNumber).Count(&count)
 	if count > 0 {
-		c.JSON(http.StatusConflict, gin.H{"error": "Invoice number already exists"})
+		response := models.ErrorResponse(
+			http.StatusConflict,
+			"Invoice number already exists",
+			fmt.Sprintf("Invoice number '%s' is already in use", invoice.InvoiceNumber),
+		)
+		c.JSON(http.StatusConflict, response)
 		return
 	}
 
 	if err := database.DB.Create(&invoice).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create invoice"})
+		response := models.ErrorResponse(
+			http.StatusInternalServerError,
+			"Failed to create invoice",
+			err.Error(),
+		)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	c.JSON(http.StatusCreated, invoice)
+	location := fmt.Sprintf("/api/invoices/%d", invoice.ID)
+	c.Header("Location", location)
+
+	related := map[string]string{
+		"items": fmt.Sprintf("/api/invoices/%d/items", invoice.ID),
+		"pdf":   fmt.Sprintf("/api/invoices/%d/pdf", invoice.ID),
+	}
+
+	response := models.SingleResourceResponse(
+		invoice,
+		location,
+		related,
+	)
+
+	c.JSON(http.StatusCreated, response)
 }
 
 // UpdateInvoice - PUT /invoices/:id
@@ -148,19 +215,34 @@ func UpdateInvoice(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := database.DB.First(&invoice, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		response := models.ErrorResponse(
+			http.StatusNotFound,
+			"Invoice not found",
+			fmt.Sprintf("Invoice with ID %s does not exist", id),
+		)
+		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
 	var updateData models.Invoice
 	if err := c.ShouldBindJSON(&updateData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := models.ErrorResponse(
+			http.StatusBadRequest,
+			"Invalid request body",
+			err.Error(),
+		)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	// Validate updated data
 	if err := validateInvoice(&updateData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := models.ErrorResponse(
+			http.StatusUnprocessableEntity,
+			"Validation failed",
+			err.Error(),
+		)
+		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
@@ -169,7 +251,12 @@ func UpdateInvoice(c *gin.Context) {
 		var count int64
 		database.DB.Model(&models.Invoice{}).Where("invoice_number = ? AND id != ?", updateData.InvoiceNumber, id).Count(&count)
 		if count > 0 {
-			c.JSON(http.StatusConflict, gin.H{"error": "Invoice number already exists"})
+			response := models.ErrorResponse(
+				http.StatusConflict,
+				"Invoice number already exists",
+				fmt.Sprintf("Invoice number '%s' is already in use", updateData.InvoiceNumber),
+			)
+			c.JSON(http.StatusConflict, response)
 			return
 		}
 	}
@@ -183,11 +270,27 @@ func UpdateInvoice(c *gin.Context) {
 	invoice.DueDate = updateData.DueDate
 
 	if err := database.DB.Save(&invoice).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update invoice"})
+		response := models.ErrorResponse(
+			http.StatusInternalServerError,
+			"Failed to update invoice",
+			err.Error(),
+		)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, invoice)
+	related := map[string]string{
+		"items": fmt.Sprintf("/api/invoices/%s/items", id),
+		"pdf":   fmt.Sprintf("/api/invoices/%s/pdf", id),
+	}
+
+	response := models.SingleResourceResponse(
+		invoice,
+		fmt.Sprintf("/api/invoices/%s", id),
+		related,
+	)
+
+	c.JSON(http.StatusOK, response)
 }
 
 // DeleteInvoice - DELETE /invoices/:id
@@ -196,39 +299,49 @@ func DeleteInvoice(c *gin.Context) {
 
 	result := database.DB.Delete(&models.Invoice{}, id)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete invoice"})
+		response := models.ErrorResponse(
+			http.StatusInternalServerError,
+			"Failed to delete invoice",
+			result.Error.Error(),
+		)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		response := models.ErrorResponse(
+			http.StatusNotFound,
+			"Invoice not found",
+			fmt.Sprintf("Invoice with ID %s does not exist", id),
+		)
+		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Invoice deleted successfully"})
+	c.Status(http.StatusNoContent)
 }
 
 // validateInvoice validates invoice data
 func validateInvoice(invoice *models.Invoice) error {
 	if strings.TrimSpace(invoice.InvoiceNumber) == "" {
-		return gin.Error{Err: nil, Type: gin.ErrorTypePublic, Meta: "Invoice number is required"}
+		return fmt.Errorf("invoice number is required")
 	}
 
 	if strings.TrimSpace(invoice.ClientName) == "" {
-		return gin.Error{Err: nil, Type: gin.ErrorTypePublic, Meta: "Client name is required"}
+		return fmt.Errorf("client name is required")
 	}
 
 	if invoice.Amount <= 0 {
-		return gin.Error{Err: nil, Type: gin.ErrorTypePublic, Meta: "Amount must be greater than 0"}
+		return fmt.Errorf("amount must be greater than 0")
 	}
 
 	validStatuses := map[string]bool{"draft": true, "sent": true, "paid": true}
 	if !validStatuses[invoice.Status] {
-		return gin.Error{Err: nil, Type: gin.ErrorTypePublic, Meta: "Status must be one of: draft, sent, paid"}
+		return fmt.Errorf("status must be one of: draft, sent, paid")
 	}
 
 	if invoice.DueDate.Before(invoice.IssueDate) {
-		return gin.Error{Err: nil, Type: gin.ErrorTypePublic, Meta: "Due date cannot be before issue date"}
+		return fmt.Errorf("due date cannot be before issue date")
 	}
 
 	return nil
@@ -236,19 +349,33 @@ func validateInvoice(invoice *models.Invoice) error {
 
 // GetInvoicePDF - GET /invoices/:id/pdf
 func GetInvoicePDF(c *gin.Context) {
-    var invoice models.Invoice
-    id := c.Param("id")
+	var invoice models.Invoice
+	id := c.Param("id")
 
 	if err := database.DB.Preload("Items").First(&invoice, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		response := models.ErrorResponse(
+			http.StatusNotFound,
+			"Invoice not found",
+			fmt.Sprintf("Invoice with ID %s does not exist", id),
+		)
+		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
-    pdfBytes, err := services.GenerateInvoicePDF(invoice)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate PDF"})
-        return
-    }
+	pdfBytes, err := services.GenerateInvoicePDF(invoice)
+	if err != nil {
+		response := models.ErrorResponse(
+			http.StatusInternalServerError,
+			"Failed to generate PDF",
+			err.Error(),
+		)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
 
-    c.Data(http.StatusOK, "application/pdf", pdfBytes)
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"invoice-%s.pdf\"", invoice.InvoiceNumber))
+	c.Header("Cache-Control", "private, max-age=3600")
+	
+	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }

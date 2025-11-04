@@ -14,7 +14,7 @@ import { ref } from 'vue'
 const message = ref('')
 
 async function fetchMessage() {
-  const res = await fetch('http://localhost:8000/api/hello')
+  const res = await fetch('http://localhost:8000/api/health')
   const data = await res.json()
   message.value = data.message
 }
