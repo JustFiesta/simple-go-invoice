@@ -40,8 +40,9 @@ func GenerateInvoicePDF(inv models.Invoice) ([]byte, error) {
 	pdf.SetFont("Arial", "", 10)
 	var total float64
 	for i, item := range inv.Items {
-		grossValue := item.Quantity * item.UnitPrice * (1 + item.VATRate/100)
+		grossValue := float64(item.Quantity) * item.UnitPrice * (1 + item.VATRate/100)
 		total += grossValue
+
 
 		row := []string{
 			fmt.Sprintf("%d", i+1),
