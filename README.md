@@ -5,6 +5,8 @@ A simple single-page application (SPA) demonstrating a basic full-stack setup us
 
 The project serves as a lightweight example of a RESTful API communicating with a modern JavaScript frontend.
 
+For further information check individual folders.
+
 ---
 
 ## Deployment Status
