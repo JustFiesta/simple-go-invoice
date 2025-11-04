@@ -43,12 +43,13 @@ runs:
           ENV_SUFFIX="dev"
         fi
         VERSION="${{ steps.version.outputs.version }}"
-        TAG_NAME="${{ inputs.tag-prefix }}${VERSION}"
+        FULL_VERSION="${VERSION}-${ENV_SUFFIX}-${SHORT_SHA}"
+        TAG_NAME="${{ inputs.tag-prefix }}${VERSION}-${ENV_SUFFIX}"
         
         echo "version=${VERSION}" >> $GITHUB_OUTPUT
         echo "full-version=${VERSION}-${ENV_SUFFIX}-${SHORT_SHA}" >> $GITHUB_OUTPUT
         echo "tag-name=${TAG_NAME}" >> $GITHUB_OUTPUT
         
         echo "Version: ${VERSION}"
-        echo "Full version: ${VERSION}-${ENV_SUFFIX}-${SHORT_SHA}"
+        echo "Full version: ${FULL_VERSION}"
         echo "Tag name: ${TAG_NAME}"
