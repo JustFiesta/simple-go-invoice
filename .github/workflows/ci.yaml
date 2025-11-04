@@ -102,8 +102,15 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Build backend binary
-        run: go build -o invoice-backend main.go
+      - name: Build backend binary with version info
+        run: |
+          VERSION=${{ steps.versioning.outputs.version }}
+          COMMIT=$(git rev-parse --short HEAD)
+          BUILDDATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          echo "Building backend version: $VERSION ($COMMIT, $BUILDDATE)"
+
+          go build -ldflags "-X main.Version=$VERSION -X main.Commit=$COMMIT -X main.BuildDate=$BUILDDATE" -o invoice-backend main.go
 
       - name: Generate version
         id: versioning
@@ -149,6 +156,9 @@ jobs:
           build-args: |
             GO_VERSION=${{ needs.load-versions.outputs.go_version }}
             DEBIAN_VERSION=${{ needs.load-versions.outputs.debian_version }}
+            APP_VERSION=${{ steps.versioning.outputs.version }}
+            GIT_COMMIT=$(git rev-parse --short HEAD)
+            BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
   build-frontend:
     runs-on: ubuntu-latest

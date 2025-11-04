@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(r *gin.Engine) {
+func SetupRoutes(r *gin.Engine, version, commit, buildDate string) {
 	// CORS middleware for frontend
 	r.Use(corsMiddleware())
 
@@ -14,7 +14,9 @@ func SetupRoutes(r *gin.Engine) {
 	// API group
 	api := r.Group("/api")
 	{
-		api.GET("/health", controllers.Ping)
+		api.GET("/health", func(c *gin.Context) {
+			controllers.Ping(c, version, commit, buildDate)
+		})
 
 		// Invoice routes
 		invoices := api.Group("/invoices")

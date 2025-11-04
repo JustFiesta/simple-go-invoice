@@ -10,6 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	Version   = "dev"
+	Commit    = "none"
+	BuildDate = "unknown"
+)
+
 func main() {
 	// Set Gin mode
 	gin.SetMode(gin.ReleaseMode)
@@ -24,10 +30,10 @@ func main() {
 	r := gin.Default()
 
 	// Setup routes
-	routes.SetupRoutes(r)
+	routes.SetupRoutes(r, Version, Commit, BuildDate)
 
 	// Start server
-	log.Printf("Server starting on %s", cfg.Port)
+	log.Printf("Server starting on %s, version %s", cfg.Port, Version)
 	if err := r.Run(cfg.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

@@ -14,11 +14,13 @@ import (
 )
 
 // Ping - health check endpoint (renamed from /hello to /health)
-func Ping(c *gin.Context) {
+func Ping(c *gin.Context, version, commit, buildDate string) {
 	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"service": "invoice-api",
-		"version": "1.0.0",
+		"status":     "ok",
+		"service":    "invoice-api",
+		"version":    version,
+		"commit":     commit,
+		"build_date": buildDate,
 	})
 }
 
