@@ -2,6 +2,7 @@
 # Simple GO invoice
 
 A simple single-page application (SPA) demonstrating a basic full-stack setup using **Go (Gin)** for the backend and **Vue 3 + Vite + Vuetify** for the frontend.  
+
 The project serves as a lightweight example of a RESTful API communicating with a modern JavaScript frontend.
 
 ---
@@ -9,9 +10,8 @@ The project serves as a lightweight example of a RESTful API communicating with 
 ## Deployment Status
 
 [![CI Pipeline](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/ci.yaml)
-
 [![Terraform Apply](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/terraform-apply.yaml/badge.svg)](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/terraform-apply.yaml)
-
+[![Security Scanning](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/security-scans.yaml/badge.svg)](https://github.com/JustFiesta/simple-go-invoice/actions/workflows/security-scans.yaml)
 ---
 
 ## Stack
@@ -19,6 +19,8 @@ The project serves as a lightweight example of a RESTful API communicating with 
 - **Backend:** Go + Gin (REST API)
 - **Frontend:** Vue 3 + Vite + Vuetify
 - **Containerization:** Docker + Docker Compose
+- **IaC**: Terraform, K8 + Kustomize
+- **CI/CD**: Github Acitons with composite Actions, ArgoCD on K8, Annual Security Scanning with Trivy
 
 ---
 
@@ -30,6 +32,8 @@ The project serves as a lightweight example of a RESTful API communicating with 
 - Communication between frontend and backend via HTTP
 - Docker + Compose setup for local development
 - Treafig reverse proxy for one URL to backend/frontend
+- Kubernetes Deployment
+- Full CI/CD
 
 ---
 
@@ -83,7 +87,7 @@ Backend API: http://localhost:8000/api/hello
 
 The project is meant for educational or demo purposes.
 
-Suitable as a base for simple CRUD applications (e.g., invoice or task manager systems).
+It is ment to showcase usage of DevOps principals in simple manner.
 
 ---
 
@@ -91,8 +95,8 @@ Suitable as a base for simple CRUD applications (e.g., invoice or task manager s
 
 | Tool          | Description                        | Link                                                                                   |
 | ------------------ | --------------------------- | -------------------------------------------------------------------------------------- |
-| **Gin (Go)**       | Mikroframework HTTP dla Go  | [https://gin-gonic.com/docs/](https://gin-gonic.com/docs/)                             |
+| **Gin (Go)**       | HTTP microframework for Go  | [https://gin-gonic.com/docs/](https://gin-gonic.com/docs/)                             |
 | **Vue 3**          | Frontend framework JS       | [https://vuejs.org/guide/introduction.html](https://vuejs.org/guide/introduction.html) |
-| **Vite**           | Szybki bundler i dev server | [https://vitejs.dev/guide/](https://vitejs.dev/guide/)                                 |
-| **Vuetify**        | Gotowe komponenty UI        | [https://next.vuetifyjs.com/](https://next.vuetifyjs.com/)                             |
-| **Docker Compose** | Definicja kontenerów        | [https://docs.docker.com/compose/](https://docs.docker.com/compose/)                   |
+| **Vite**           | Bundler and dev server | [https://vitejs.dev/guide/](https://vitejs.dev/guide/)                                 |
+| **Vuetify**        | Ready UI components        | [https://next.vuetifyjs.com/](https://next.vuetifyjs.com/)                             |
+| **Docker Compose** | Containers definition        | [https://docs.docker.com/compose/](https://docs.docker.com/compose/)                   |
