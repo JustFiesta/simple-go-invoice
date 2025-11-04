@@ -1,7 +1,7 @@
 {
   "name": "simple-go-invoice",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "rollup": "^4.52.5"
   }
 }

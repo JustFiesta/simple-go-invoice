@@ -50,6 +50,7 @@ jobs:
       node_version: ${{ steps.versions.outputs.node_version }}
       alpine_version: ${{ steps.versions.outputs.alpine_version }}
       debian_version: ${{ steps.versions.outputs.debian_version }}
+      nginx_version: ${{ steps.versions.outputs.nginx_version }}
     steps:
       - uses: actions/checkout@v3
       
@@ -60,10 +61,12 @@ jobs:
           NODE_VERSION=$(jq -r '.node' .versions.json)
           ALPINE_VERSION=$(jq -r '.alpine' .versions.json)
           DEBIAN_VERSION=$(jq -r '.debian' .versions.json)
+          NGINX_VERSION=$(jq -r '.nginx' .versions.json)
           echo "go_version=${GO_VERSION}" >> $GITHUB_OUTPUT
           echo "node_version=${NODE_VERSION}" >> $GITHUB_OUTPUT
           echo "alpine_version=${ALPINE_VERSION}" >> $GITHUB_OUTPUT
           echo "debian_version=${DEBIAN_VERSION}" >> $GITHUB_OUTPUT
+          echo "nginx_version=${NGINX_VERSION}" >> $GITHUB_OUTPUT
           echo "Using Go: ${GO_VERSION}, Node: ${NODE_VERSION}, Alpine: ${ALPINE_VERSION},  Debian: ${DEBIAN_VERSION}"
 
   lint-backend:
@@ -180,7 +183,10 @@ jobs:
           node-version: ${{ needs.load-versions.outputs.node_version }}
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+          npm install
 
       - name: Run frontend tests
         run: npm run test || echo "No frontend tests defined"
@@ -194,7 +200,6 @@ jobs:
 
       - name: Update package.json version
         run: |
-          cd frontend
           VERSION=${{ steps.versioning.outputs.version }}
           jq ".version = \"${VERSION}\"" package.json > package.json.tmp && mv package.json.tmp package.json
 
@@ -249,4 +254,5 @@ jobs:
           full-version: ${{ steps.versioning.outputs.full-version }}
           build-args: |
             NODE_VERSION=${{ needs.load-versions.outputs.node_version }}
+            NGINX_VERSION=${{ needs.load-versions.outputs.nginx_version }}
             APP_VERSION=${{ steps.versioning.outputs.version }}
