@@ -23,11 +23,16 @@ services:
       args:
         GO_VERSION: ${GO_VERSION}
         DEBIAN_VERSION: ${DEBIAN_VERSION}
+        APP_VERSION: ${APP_VERSION:-dev}
+        GIT_COMMIT: ${GIT_COMMIT:-local}
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}
     container_name: go-backend
     env_file:
       - .env
     expose: 
       - "8080"
+    ports:
+      - "8080:8080" 
     working_dir: /app
     volumes:
       - backend_data:/app/data
