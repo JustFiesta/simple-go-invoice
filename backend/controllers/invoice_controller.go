@@ -239,10 +239,10 @@ func GetInvoicePDF(c *gin.Context) {
     var invoice models.Invoice
     id := c.Param("id")
 
-    if err := database.DB.First(&invoice, id).Error; err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
-        return
-    }
+	if err := database.DB.Preload("Items").First(&invoice, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		return
+	}
 
     pdfBytes, err := services.GenerateInvoicePDF(invoice)
     if err != nil {

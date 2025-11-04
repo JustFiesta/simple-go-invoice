@@ -16,4 +16,5 @@ type Invoice struct {
 	Status        string         `gorm:"default:'draft'" json:"status" binding:"required,oneof=draft sent paid"`
 	IssueDate     time.Time      `json:"issue_date" binding:"required"`
 	DueDate       time.Time      `json:"due_date" binding:"required"`
+	Items         []InvoiceItem  `gorm:"foreignKey:InvoiceID"`
 }

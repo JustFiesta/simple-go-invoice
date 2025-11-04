@@ -38,7 +38,13 @@ func Connect() {
 	// Auto-migrate the Invoice model
 	err = DB.AutoMigrate(&models.Invoice{})
 	if err != nil {
-		log.Fatal("Migration failed:", err)
+		log.Fatal("Invoice Migration failed:", err)
+	}
+
+	// Auto-migrate the InvoiceItem model
+	err = DB.AutoMigrate(&models.InvoiceItem{})
+	if err != nil {
+		log.Fatal("InvoiceItem Migration failed:", err)
 	}
 
 	log.Println("Database connected and migrated successfully")
