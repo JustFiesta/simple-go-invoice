@@ -17,13 +17,13 @@ spec:
           image: 910681227783.dkr.ecr.eu-west-1.amazonaws.com/mbocak-k8:invoice-backend-1.0.0-prod-b58c2ff
           ports:
             - containerPort: 8080
-          volumeMounts:
-            - name: data
-              mountPath: /app/data
+          # volumeMounts:
+          #   - name: data
+          #     mountPath: /app/data
           envFrom:
             - configMapRef:
                 name: backend-config
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: backend-data
+      # volumes:
+      #   - name: data
+      #     persistentVolumeClaim:
+      #       claimName: backend-data
