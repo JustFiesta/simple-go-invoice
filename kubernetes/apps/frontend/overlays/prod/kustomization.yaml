@@ -8,8 +8,4 @@ resources:
   - namespace.yaml
   - configmap.yaml
   - ingress.yaml
-
-namePrefix: prod-
-labels:
-  - pairs:
-      env: prod
+  - lb-service.yaml
