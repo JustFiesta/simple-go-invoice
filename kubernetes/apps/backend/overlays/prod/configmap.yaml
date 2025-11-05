@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: backend-config
 data:
-  ENV: dev
+  ENV: prod
   LOG_LEVEL: debug
   DATABASE_PATH: /app/data/invoice.db

@@ -3,6 +3,6 @@ resources:
   - configmap.yaml
   - ingress.yaml
 
-namePrefix: dev-
+namePrefix: prod-
 commonLabels:
-  env: dev
+  env: prod
