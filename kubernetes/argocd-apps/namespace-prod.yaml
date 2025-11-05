@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: <your-repo>
+    repoURL: https://github.com/JustFiesta/simple-go-invoice
     targetRevision: HEAD
-    path: kubernetes/apps/shared
+    path: kubernetes/apps/shared/namespace.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default

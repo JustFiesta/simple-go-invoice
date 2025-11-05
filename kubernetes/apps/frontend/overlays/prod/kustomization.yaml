@@ -6,3 +6,4 @@ namespace: prod
 resources:
   - ../../base
   - configmap.yaml
+  - ingress.yaml
