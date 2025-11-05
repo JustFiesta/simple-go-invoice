@@ -10,5 +10,6 @@ resources:
   - ingress.yaml
 
 namePrefix: prod-
-commonLabels:
-  env: prod
+labels:
+  - pairs:
+      env: prod
