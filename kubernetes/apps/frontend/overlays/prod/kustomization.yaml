@@ -5,7 +5,7 @@ namespace: prod
 
 resources:
   - ../../base
-  - ../../../../namespaces/prod.yaml
+  - namespace.yaml
   - configmap.yaml
   - ingress.yaml
 
