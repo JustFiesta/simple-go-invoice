@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  ENV: dev
+  LOG_LEVEL: debug
+  DATABASE_PATH: /app/data/invoice.db
