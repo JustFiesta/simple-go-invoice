@@ -4,8 +4,8 @@
       <div class="d-flex align-center">
         <v-icon icon="mdi-format-list-bulleted" color="primary" class="mr-3"></v-icon>
         <span class="text-h6 font-weight-bold">Invoice Items</span>
-        <v-chip v-if="filteredItems.length > 0" size="small" class="ml-3" color="secondary">
-          {{ filteredItems.length }}
+        <v-chip v-if="displayedItems.length > 0" size="small" class="ml-3" color="secondary">
+          {{ displayedItems.length }}
         </v-chip>
       </div>
       <v-btn
@@ -13,7 +13,7 @@
         prepend-icon="mdi-plus"
         variant="flat"
         @click="startAddingItem"
-        :disabled="isAdding || editingItemId !== null"
+        :disabled="isAdding || isEditing"
       >
         Add Item
       </v-btn>
@@ -22,7 +22,7 @@
     <v-divider :thickness="1" color="surface-lighter"></v-divider>
 
     <v-card-text class="pa-0">
-      <div v-if="filteredItems.length > 0 || isAdding" class="table-wrapper">
+      <div v-if="displayedItems.length > 0 || isAdding || isEditing" class="table-wrapper">
         <v-table class="custom-table">
           <thead>
             <tr>
@@ -37,7 +37,7 @@
             </tr>
           </thead>
           <tbody>
-            <!-- New Item Form - TYLKO JEDEN na raz -->
+            <!-- New Item Form - zawsze na górze -->
             <InvoiceItemForm
               v-if="isAdding"
               :item="newItem"
@@ -46,26 +46,26 @@
               @cancel="cancelAdding"
             />
 
-            <!-- Existing Items - tylko te które NIE są w trakcie edycji -->
-            <InvoiceItemRow
-              v-for="(item, index) in filteredItems"
-              :key="item.id"
-              :item="item"
-              :index="index"
-              :deleting="deletingItemId === item.id"
-              :editing="editingItemId === item.id"
-              @edit="startEditingItem"
-              @delete="handleDeleteItem"
-            />
-
-            <!-- Edit Form dla konkretnego itemu -->
-            <InvoiceItemForm
-              v-if="editingItemId !== null"
-              :item="editingItem"
-              :saving="operationLoading"
-              @save="handleUpdateItem"
-              @cancel="cancelEditing"
-            />
+            <!-- Dynamiczna lista - przełącza między display a edit mode -->
+            <template v-for="(item, index) in props.items" :key="item.id">
+              <!-- Tryb edycji -->
+              <InvoiceItemForm
+                v-if="editingItemId === item.id"
+                :item="editingItem"
+                :saving="operationLoading"
+                @save="handleUpdateItem"
+                @cancel="cancelEditing"
+              />
+              <!-- Tryb wyświetlania -->
+              <InvoiceItemRow
+                v-else
+                :item="item"
+                :index="getItemIndex(index)"
+                :deleting="deletingItemId === item.id"
+                @edit="startEditingItem"
+                @delete="handleDeleteItem"
+              />
+            </template>
           </tbody>
         </v-table>
       </div>
@@ -110,14 +110,24 @@ const newItem = reactive({
   vat_rate: 23
 })
 
-// Filtruj items - wyklucz te w trakcie edycji z normalnej listy
-const filteredItems = computed(() => {
+// Computed properties
+const isEditing = computed(() => editingItemId.value !== null)
+const displayedItems = computed(() => {
   return props.items.filter(item => item.id !== editingItemId.value)
 })
 
+const getItemIndex = (index) => {
+  // Jeśli jest formularz dodawania na górze, przesuwamy indeksy
+  if (isAdding.value) {
+    return index + 1
+  }
+  return index + 1
+}
+
 const startAddingItem = () => {
+  console.log('Starting to add new item')
   isAdding.value = true
-  editingItemId.value = null // Upewnij się, że tylko jeden formularz jest aktywny
+  editingItemId.value = null
   Object.assign(newItem, {
     description: '',
     quantity: 1,
@@ -127,10 +137,12 @@ const startAddingItem = () => {
 }
 
 const cancelAdding = () => {
+  console.log('Canceling add')
   isAdding.value = false
 }
 
 const handleAddItem = async (itemData) => {
+  console.log('Adding item:', itemData)
   operationLoading.value = true
   try {
     await emit('add', itemData)
@@ -147,28 +159,38 @@ const handleAddItem = async (itemData) => {
 }
 
 const startEditingItem = (item) => {
+  console.log('Starting edit for item:', item)
   editingItemId.value = item.id
-  isAdding.value = false // Upewnij się, że tylko jeden formularz jest aktywny
+  isAdding.value = false
   Object.assign(editingItem, { ...item })
 }
 
 const cancelEditing = () => {
+  console.log('Canceling edit')
   editingItemId.value = null
-  Object.keys(editingItem).forEach(key => delete editingItem[key])
+  // Czyścimy editingItem
+  Object.keys(editingItem).forEach(key => {
+    delete editingItem[key]
+  })
 }
 
 const handleUpdateItem = async (itemData) => {
+  console.log('Updating item:', itemData)
   operationLoading.value = true
   try {
     await emit('update', editingItemId.value, itemData)
     editingItemId.value = null
-    Object.keys(editingItem).forEach(key => delete editingItem[key])
+    // Czyścimy editingItem
+    Object.keys(editingItem).forEach(key => {
+      delete editingItem[key]
+    })
   } finally {
     operationLoading.value = false
   }
 }
 
 const handleDeleteItem = async (item) => {
+  console.log('Deleting item:', item)
   if (!confirm(`Delete item "${item.description}"?`)) return
   
   deletingItemId.value = item.id
