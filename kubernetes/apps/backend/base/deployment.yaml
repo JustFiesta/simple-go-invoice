@@ -12,13 +12,6 @@ spec:
       labels:
         app: backend
     spec:
-      initContainers:
-        - name: init-data-dir
-          image: busybox
-          command: ["sh", "-c", "mkdir -p /app/data && chmod 755 /app/data"]
-          volumeMounts:
-            - name: data
-              mountPath: /app/data
       containers:
         - name: backend
           image: 910681227783.dkr.ecr.eu-west-1.amazonaws.com/mbocak-k8:invoice-backend-1.0.0-prod-b58c2ff
@@ -30,6 +23,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: backend-config
+          env:
+            - name: DB_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: DB_PATH
       volumes:
         - name: data
           persistentVolumeClaim:

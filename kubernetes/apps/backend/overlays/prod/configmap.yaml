@@ -5,4 +5,4 @@ metadata:
 data:
   ENV: prod
   LOG_LEVEL: debug
-  DATABASE_PATH: /app/data/invoice.db
+  DB_PATH: /tmp/invoices.db

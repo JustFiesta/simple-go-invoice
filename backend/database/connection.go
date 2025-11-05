@@ -15,14 +15,9 @@ var DB *gorm.DB
 
 func Connect() {
 	var err error
-	dbPath := "/app/data/invoices.db"
-
-	// Ensure data directory exists
-	dataDir := "/app/data"
-	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(dataDir, 0755); err != nil {
-			log.Fatal("Failed to create data directory:", err)
-		}
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "/app/data/invoices.db"
 	}
 
 	// Configure GORM
