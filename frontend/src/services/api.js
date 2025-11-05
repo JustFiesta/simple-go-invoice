@@ -10,15 +10,75 @@ const api = axios.create({
 
 // Request interceptor
 api.interceptors.request.use(
-  config => config,
-  error => Promise.reject(error)
+  config => {
+    console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`, config.params)
+    return config
+  },
+  error => {
+    console.error('[API Request Error]', error)
+    return Promise.reject(error)
+  }
 )
 
-// Response interceptor
+// Response interceptor with better error handling
 api.interceptors.response.use(
-  response => response,
+  response => {
+    console.log(`[API Response] ${response.config.url}`, response.status)
+    return response
+  },
   error => {
-    const message = error.response?.data?.error?.message || error.message || 'An error occurred'
+    console.error('[API Error]', error)
+    
+    let message = 'An error occurred'
+    
+    // Handle connection errors
+    if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+      message = 'Cannot connect to backend server. Please ensure the backend is running on http://localhost:8080'
+    } 
+    // Handle timeout
+    else if (error.code === 'ECONNABORTED') {
+      message = 'Request timeout. Please try again.'
+    }
+    // Handle HTTP errors
+    else if (error.response) {
+      const status = error.response.status
+      const data = error.response.data
+      
+      if (data?.error?.message) {
+        message = data.error.message
+      } else {
+        switch (status) {
+          case 400:
+            message = 'Bad request. Please check your input.'
+            break
+          case 401:
+            message = 'Unauthorized. Please log in.'
+            break
+          case 403:
+            message = 'Forbidden. You do not have permission.'
+            break
+          case 404:
+            message = 'Resource not found.'
+            break
+          case 409:
+            message = data?.error?.message || 'Conflict. Resource already exists.'
+            break
+          case 422:
+            message = data?.error?.message || 'Validation failed.'
+            break
+          case 500:
+            message = 'Server error. Please try again later.'
+            break
+          default:
+            message = `Server error: ${status}`
+        }
+      }
+    }
+    // Handle other errors
+    else if (error.message) {
+      message = error.message
+    }
+    
     return Promise.reject(new Error(message))
   }
 )
@@ -26,7 +86,13 @@ api.interceptors.response.use(
 export const invoiceService = {
   // Get all invoices with filters
   getInvoices(params = {}) {
-    return api.get('/invoices', { params })
+    // Ensure page and limit have defaults
+    const queryParams = {
+      page: params.page || 1,
+      limit: params.limit || 10,
+      ...params
+    }
+    return api.get('/invoices', { params: queryParams })
   },
 
   // Get single invoice
