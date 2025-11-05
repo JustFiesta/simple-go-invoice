@@ -236,6 +236,13 @@ const loadDashboardData = async () => {
     })
 
     const allInvoices = response.data.data || []
+
+    const normalizedInvoices = allInvoices.map(inv => {
+    const vatRate = inv.vat_rate || 0
+    const grossAmount = inv.amount * (1 + vatRate / 100)
+    return { ...inv, gross_amount: grossAmount }
+    })
+
     const meta = response.data.meta
 
     // Calculate stats from fetched invoices
@@ -245,16 +252,16 @@ const loadDashboardData = async () => {
     stats.paid = allInvoices.filter(inv => inv.status === 'paid').length
 
     // Calculate financials
-    financials.total = allInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
-    financials.pending = allInvoices
-      .filter(inv => inv.status === 'sent')
-      .reduce((sum, inv) => sum + (inv.amount || 0), 0)
-    financials.paid = allInvoices
-      .filter(inv => inv.status === 'paid')
-      .reduce((sum, inv) => sum + (inv.amount || 0), 0)
+    financials.total = normalizedInvoices.reduce((sum, inv) => sum + (inv.gross_amount || 0), 0)
+    financials.pending = normalizedInvoices
+    .filter(inv => inv.status === 'sent')
+    .reduce((sum, inv) => sum + (inv.gross_amount || 0), 0)
+    financials.paid = normalizedInvoices
+    .filter(inv => inv.status === 'paid')
+    .reduce((sum, inv) => sum + (inv.gross_amount || 0), 0)
 
     // Get recent invoices (first 5)
-    recentInvoices.value = allInvoices.slice(0, 5)
+    recentInvoices.value = normalizedInvoices.slice(0, 5)
   } catch (error) {
     showNotification(error.message || 'Failed to load dashboard data', 'error')
   } finally {

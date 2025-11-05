@@ -22,7 +22,7 @@
       <div class="d-flex justify-space-between mb-2">
         <span class="text-body-2 text-grey">Amount:</span>
         <span class="text-h6 font-weight-bold text-primary">
-          {{ formatCurrency(invoice.amount) }}
+          {{ formatCurrency(invoice.gross_amount || invoice.amount) }}
         </span>
       </div>
 

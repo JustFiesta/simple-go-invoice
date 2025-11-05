@@ -1,86 +1,88 @@
 <template>
   <tr class="item-form-row">
-    <td class="text-secondary"></td>
-    <td>
-      <v-text-field
-        v-model="localItem.description"
-        label="Description *"
-        :rules="[rules.required]"
-        density="compact"
-        variant="outlined"
-        hide-details="auto"
-        bg-color="surface-light"
-      ></v-text-field>
-    </td>
-    <td>
-      <v-text-field
-        v-model.number="localItem.quantity"
-        label="Quantity *"
-        type="number"
-        min="1"
-        :rules="[rules.required, rules.positiveNumber]"
-        density="compact"
-        variant="outlined"
-        hide-details="auto"
-        bg-color="surface-light"
-      ></v-text-field>
-    </td>
-    <td>
-      <v-text-field
-        v-model.number="localItem.unit_price"
-        label="Unit Price *"
-        type="number"
-        step="0.01"
-        min="0"
-        :rules="[rules.required, rules.nonNegative]"
-        density="compact"
-        variant="outlined"
-        hide-details="auto"
-        bg-color="surface-light"
-      ></v-text-field>
-    </td>
-    <td>
-      <v-text-field
-        v-model.number="localItem.vat_rate"
-        label="VAT % *"
-        type="number"
-        step="0.01"
-        min="0"
-        max="100"
-        :rules="[rules.required, rules.nonNegative]"
-        density="compact"
-        variant="outlined"
-        hide-details="auto"
-        bg-color="surface-light"
-      ></v-text-field>
-    </td>
-    <td class="text-right font-weight-medium">
-      {{ formatCurrency(localItem.quantity * localItem.unit_price) }}
-    </td>
-    <td class="text-right font-weight-bold text-primary">
-      {{ formatCurrency(calculateGrossTotal) }}
-    </td>
-    <td class="text-center">
-      <div class="d-flex justify-center gap-1">
-        <v-btn
-          color="success"
-          variant="flat"
-          size="small"
-          :disabled="!valid"
-          :loading="saving"
-          @click="handleSave"
-        >
-          <v-icon icon="mdi-check"></v-icon>
-        </v-btn>
-        <v-btn
-          color="error"
-          variant="outlined"
-          size="small"
-          @click="handleCancel"
-        >
-          <v-icon icon="mdi-close"></v-icon>
-        </v-btn>
-      </div>
+    <td colspan="8" class="pa-0">
+      <v-form ref="formRef" v-model="valid">
+        <table class="w-100">
+            <tbody>
+                <tr>
+                    <td class="text-secondary"></td>
+                    <td>
+                    <v-text-field
+                        v-model="localItem.description"
+                        label="Description *"
+                        :rules="[rules.required]"
+                        density="compact"
+                        variant="outlined"
+                        hide-details="auto"
+                    />
+                    </td>
+                    <td>
+                    <v-text-field
+                        v-model.number="localItem.quantity"
+                        label="Quantity *"
+                        type="number"
+                        :rules="[rules.required, rules.positiveNumber]"
+                        density="compact"
+                        variant="outlined"
+                        hide-details="auto"
+                    />
+                    </td>
+                    <td>
+                    <v-text-field
+                        v-model.number="localItem.unit_price"
+                        label="Unit Price *"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        :rules="[rules.required, rules.nonNegative]"
+                        density="compact"
+                        variant="outlined"
+                        hide-details="auto"
+                    />
+                    </td>
+                    <td>
+                    <v-text-field
+                        v-model.number="localItem.vat_rate"
+                        label="VAT % *"
+                        type="number"
+                        :rules="[rules.required, rules.nonNegative]"
+                        density="compact"
+                        variant="outlined"
+                        hide-details="auto"
+                    />
+                    </td>
+                    <td class="text-right font-weight-medium">
+                    {{ formatCurrency(localItem.quantity * localItem.unit_price) }}
+                    </td>
+                    <td class="text-right font-weight-bold text-primary">
+                    {{ formatCurrency(calculateGrossTotal) }}
+                    </td>
+                    <td class="text-center">
+                    <div class="d-flex justify-center gap-1">
+                        <v-btn
+                        color="success"
+                        variant="flat"
+                        size="small"
+                        :disabled="!valid"
+                        :loading="saving"
+                        @click="handleSave"
+                        >
+                        <v-icon icon="mdi-check"></v-icon>
+                        </v-btn>
+                        <v-btn
+                        color="error"
+                        variant="outlined"
+                        size="small"
+                        @click="handleCancel"
+                        >
+                        <v-icon icon="mdi-close"></v-icon>
+                        </v-btn>
+                    </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+      </v-form>
     </td>
   </tr>
 </template>
