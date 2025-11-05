@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 910681227783.dkr.ecr.eu-west-1.amazonaws.com/mbocak-k8/invoice-frontend-latest
+          image: 910681227783.dkr.ecr.eu-west-1.amazonaws.com/mbocak-k8:invoice-backend-1.0.0-prod-b58c2ff
           ports:
             - containerPort: 80
           envFrom:
