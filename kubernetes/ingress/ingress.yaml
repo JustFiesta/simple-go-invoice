@@ -1,29 +1,44 @@
+---
+# Backend API Ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: simple-go-invoice
+  name: backend-api
   namespace: prod
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/priority: "100"
 spec:
   ingressClassName: nginx
   rules:
-    - host: "" 
-      http:
-        paths:
-          - path: /api/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: backend
-                port:
-                  number: 8080
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend
-                port:
-                  number: 80
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8080
+
+---
+# Frontend Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-app
+  namespace: prod
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/priority: "10"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
