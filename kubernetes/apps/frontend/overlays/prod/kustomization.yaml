@@ -1,0 +1,8 @@
+resources:
+  - ../../base
+  - configmap.yaml
+  - ingress.yaml
+
+namePrefix: dev-
+commonLabels:
+  env: dev
