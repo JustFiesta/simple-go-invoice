@@ -5,5 +5,4 @@ namespace: prod
 
 resources:
   - ../../base
-  - namespace.yaml
   - configmap.yaml
