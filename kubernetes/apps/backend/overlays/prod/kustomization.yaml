@@ -2,6 +2,7 @@ resources:
   - ../../base
   - configmap.yaml
   - ingress.yaml
+  - namespace.yaml
 
 namePrefix: prod-
 commonLabels:
