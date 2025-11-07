@@ -2,11 +2,11 @@
 
 GitOps repository for Invoice Management System running on AWS EKS.
 
-## 📁 Directory Structure
+## Structure
 
 ```shell
 kubernetes/
-├── infrastructure/         # Cluster infrastructure (manual install)
+├── infrastructure/        # Cluster infrastructure (manual install)
 │   └── ingress-nginx/     # NGINX Ingress Controller
 │
 ├── argocd/                # ArgoCD installation (bootstrap)
@@ -16,17 +16,17 @@ kubernetes/
 ├── apps/                  # Application manifests (managed by ArgoCD)
 │   ├── backend/           # Go backend API
 │   ├── frontend/          # Vue.js frontend
-│   └── invoice-app/       # Shared ingress
+│   └── shared/            # Shared ingress
 │
-└── argocd-apps/          # ArgoCD Application CRDs
+└── argocd-apps/           # ArgoCD Application CRDs
     ├── backend-prod.yaml
     ├── frontend-prod.yaml
     └── invoice-app-prod.yaml
 ```
 
-## 🚀 Installation Order
+## Installation Order
 
-### 1. Infrastructure (One-time setup)
+### Infrastructure (One-time setup)
 
 Infrastructure components are installed **manually** and are **prerequisite** for ArgoCD.
 
@@ -42,7 +42,7 @@ kubectl get pods -n ingress-nginx
 kubectl get svc -n ingress-nginx
 ```
 
-### 2. ArgoCD (Bootstrap)
+### ArgoCD (Bootstrap)
 
 ArgoCD manages itself and all applications after initial bootstrap.
 
@@ -62,7 +62,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 kubectl get svc argocd-server -n argocd
 ```
 
-### 3. Applications (GitOps)
+### Applications
 
 Applications are deployed and managed by ArgoCD.
 
@@ -79,7 +79,7 @@ kubectl apply -f argocd-apps/invoice-app-prod.yaml
 kubectl get applications -n argocd
 ```
 
-## 🔄 GitOps Workflow
+## GitOps Workflow
 
 1. **Make changes** to manifests in `apps/*/overlays/prod/`
 2. **Commit & push** to Git repository
@@ -87,7 +87,7 @@ kubectl get applications -n argocd
 4. **ArgoCD syncs** changes to cluster
 5. **Monitor** via ArgoCD UI or CLI
 
-## 📊 Monitoring
+## Monitoring
 
 ```shell
 # Check all resources
@@ -104,7 +104,7 @@ kubectl logs -n prod -l app=backend --tail=50
 kubectl logs -n prod -l app=frontend --tail=50
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Application not syncing
 
@@ -147,12 +147,12 @@ kubectl run test -n prod --rm -it --image=curlimages/curl --restart=Never -- \
   curl -I http://frontend:80/
 ```
 
-## 🌍 Environments
+## Environments
 
 - **prod**: Production environment (namespace: `prod`)
-- **dev**: Development environment (namespace: `dev`) - TBD
 
-## 📚 Additional Resources
+
+## Additional Resources
 
 - [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
 - [Kustomize Documentation](https://kustomize.io/)
