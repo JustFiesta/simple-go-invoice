@@ -1,66 +1,188 @@
-# Backend Overview
+# Backend
 
-Simple REST backend written in Go (Gin) that serves invoice data and PDF generation.
+RESTful API built with Go and Gin framework for managing invoices and generating PDFs.
 
-## Summary
+## What It Does
 
-- Small Gin-based HTTP API with MVC-like layout: routes → controllers → services → models.
-- Files: main.go, routes/, controllers/, services/, models/, database/, config/.
+A lightweight HTTP API that handles:
+
+- Invoice CRUD
+- Pagination & filtering - search, sort, paginate invoice lists
+- PDF generation
+- Validation
+- HATEOAS - REST responses with hypermedia links
 
 ## Technologies
 
-- Go + Gin
-- SQLite database (via database/connection.go)
-- PDF generation service (services/pdf_service.go)
-- Dockerfile for container builds
+- Go 1.25
+- Gin
+- GORM
+- SQLite
+- gofpdf
 
-## Standards
+## Architecture
 
-- Semantic API responses (JSON)
-- Linting expected in CI
-- HTTP status codes for success/error handling (see below)
-- Full REST
+```shell
+backend/
+├── main.go              # Entry point, server setup
+├── config/              # Configuration loading
+│   └── config.go        # Port and settings
+├── database/            # Database layer
+│   └── connection.go    # SQLite connection & migrations
+├── models/              # Data structures
+│   ├── invoice.go       # Invoice entity
+│   ├── invoice_item.go  # Line item entity
+│   └── response.go      # API response wrappers
+├── controllers/         # Request handlers
+│   ├── invoice_controller.go
+│   └── invoice_items.go
+├── services/            # Business logic
+│   └── pdf_service.go   # PDF generation
+└── routes/              # Route definitions
+    └── routes.go        # Endpoint mappings + middleware
+```
 
-## What is required for full operation
+## Design Patterns
 
-- Go toolchain (recommended Go 1.25+)
-- Environment variables (see `.env`)
-- Docker for containerized runs
+### MVC-like Structure
 
-## Env setup (example)
+- Routes - map URLs to controllers
+- Controllers - handle HTTP requests/responses
+- Models - define data structures and validation
+- Services - encapsulate business logic (PDFs)
 
-- source .env
-- build with go (`go build`)
-- run binary
+### Response Format
 
-or
+All responses follow a consistent structure:
 
-- `docker build -t invoice-backend .`
-- `docker run --name invoice-backend -p 8080:8080 invoice-backend`
+```json
+{
+  "data": {...},
+  "links": {
+    "self": "/api/invoices/1",
+    "related": {
+      "items": "/api/invoices/1/items"
+    }
+  },
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 42
+  }
+}
+```
 
-## REST overview (main endpoints)
+Errors use the same envelope:
 
-- GET    /api/health               — health check
-- GET    /api/invoices             — list invoices (with pagination/filter)
-- POST   /api/invoices             — create invoice
-- GET    /api/invoices/:id         — get invoice by id
-- PUT    /api/invoices/:id         — update invoice
-- DELETE /api/invoices/:id         — delete invoice
-- POST   /api/invoices/:id/pdf     — generate/download PDF for invoice
-- (Invoice items handled under /api/invoices/:id/items)
+```json
+{
+  "error": {
+    "code": 404,
+    "message": "Invoice not found",
+    "details": "Invoice with ID 999 does not exist"
+  }
+}
+```
 
-## Common HTTP status codes returned
+### Database Migrations
 
-- 200 OK — successful GET/PUT
-- 201 Created — resource created
-- 204 No Content — successful delete (no body)
-- 400 Bad Request — validation or client error
-- 404 Not Found — missing resource
-- 500 Internal Server Error — unexpected server/database error
+GORM auto-migrates schema on startup - no separate migration files needed for this simple app.
 
-## Structure notes
+## API Endpoints
 
-- routes/routes.go wires endpoints to controllers.
-- controllers handle request/response and call models/services.
-- database/connection.go manages DB connection pooling.
-- services/pdf_service.go handles PDF creation.
+### Health Check
+
+```shell
+GET /api/health
+```
+
+Returns version info and service status.
+
+### Invoices
+
+```shell
+GET    /api/invoices              # List all (paginated)
+GET    /api/invoices/:id          # Get single invoice
+POST   /api/invoices              # Create new invoice
+PUT    /api/invoices/:id          # Update invoice
+DELETE /api/invoices/:id          # Delete invoice
+GET    /api/invoices/:id/pdf      # Download PDF
+```
+
+### Invoice Items (nested resource)
+
+```shell
+GET    /api/invoices/:id/items           # List items
+POST   /api/invoices/:id/items           # Add item
+PUT    /api/invoices/:id/items/:itemId   # Update item
+DELETE /api/invoices/:id/items/:itemId   # Delete item
+```
+
+## Running Locally
+
+### Development
+
+```bash
+cd backend
+
+# Install dependencies
+go mod download
+
+# Run directly
+go run main.go
+
+# Or build binary
+go build -o invoice-backend
+./invoice-backend
+```
+
+Server starts on `http://localhost:8080`
+
+### Environment Variables
+
+```bash
+source .env.example
+
+# DB_PATH="/app/data/invoices.db" - Optional, defaults to this path
+```
+
+The app creates the database file automatically if it doesn't exist.
+
+## Docker
+
+### Build Image
+
+```bash
+docker build \
+  --build-arg GO_VERSION=1.25 \
+  --build-arg DEBIAN_VERSION=bookworm-20251020-slim \
+  --build-arg APP_VERSION=1.0.0 \
+  --build-arg GIT_COMMIT=$(git rev-parse --short HEAD) \
+  --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+  -t invoice-backend .
+```
+
+Multi-stage build: Go for compilation, Debian slim for runtime.
+
+### Run Container
+
+```bash
+docker run -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  invoice-backend
+```
+
+Mount `/app/data` to persist the SQLite database.
+
+## Testing backend response
+
+```bash
+curl -X GET http://localhost:8080/api/health
+```
+
+## Security
+
+- **Input validation** - Gin's binding tags validate JSON
+- **SQL injection** - GORM uses prepared statements
+- **Non-root user** - Dockerfile runs as UID 1000
+- **No secrets** - no hardcoded credentials (use env vars)

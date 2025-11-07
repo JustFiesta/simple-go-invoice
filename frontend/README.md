@@ -13,7 +13,7 @@ A single-page application that provides:
 - **Smart filtering** - search, sort, paginate invoices
 - **Real-time calculations** - automatic totals with VAT
 
-## Tech Stack
+## Technologies
 
 - **Vue 3** - framework
 - **Vite** - build tool
