@@ -24,14 +24,19 @@ Simple REST backend written in Go (Gin) that serves invoice data and PDF generat
 ## What is required for full operation
 
 - Go toolchain (recommended Go 1.25+)
-- Environment variables (see example)
-- Docker for containerized runs (optional)
+- Environment variables (see `.env`)
+- Docker for containerized runs
 
 ## Env setup (example)
 
 - source .env
 - build with go (`go build`)
 - run binary
+
+or
+
+- `docker build -t invoice-backend .`
+- `docker run --name invoice-backend -p 8080:8080 invoice-backend`
 
 ## REST overview (main endpoints)
 
