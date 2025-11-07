@@ -41,7 +41,7 @@ For further information check individual folders.
 
 ## Running the Project
 
-### 1. Clone the repository
+### Clone the repository
 
 ```bash
 git clone https://github.com/<your-username>/invoice-spa-go.git
@@ -49,13 +49,13 @@ git clone https://github.com/<your-username>/invoice-spa-go.git
 cd invoice-spa-go
 ```
 
-### 2. Copy .env.example
+### Copy .env.example
 
 ```shell
 cp .env.example .env
 ```
 
-### 2. Start/Stop with Docker Compose
+### Start/Stop with Docker Compose
 
 ```shell
 docker compose up --build -d .
@@ -76,7 +76,7 @@ docker build --build-arg NODE_VERSION=$NODE_VERSION -t invoice-frontend ./fronte
 docker compose watch
 ```
 
-### 3. Browser access
+### Browser access
 
 ```txt
 Frontend: http://localhost:80
