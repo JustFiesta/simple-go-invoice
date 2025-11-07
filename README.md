@@ -79,8 +79,8 @@ docker compose watch
 ### 3. Browser access
 
 ```txt
-Frontend: http://localhost:8000
-Backend API: http://localhost:8000/api/health
+Frontend: http://localhost:80
+Backend API: http://localhost:8080/api/health
 ```
 
 ---
