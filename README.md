@@ -5,7 +5,11 @@ A simple single-page application (SPA) demonstrating a basic full-stack setup us
 
 The project serves as a lightweight example of a RESTful API communicating with a modern JavaScript frontend.
 
+The data is preserved in SQLite database (default `/app/data/invoices.db`), it is not made to be persistant!
+
 For further information check individual folders.
+
+![UI](doc/ui.png)
 
 ---
 
@@ -20,6 +24,7 @@ For further information check individual folders.
 
 - **Backend:** Go + Gin (REST API)
 - **Frontend:** Vue 3 + Vite + Vuetify
+- **Database:** SQLite
 - **Containerization:** Docker + Docker Compose
 - **IaC**: Terraform, K8 + Kustomize
 - **CI/CD**: Github Acitons with composite Actions, ArgoCD on K8, Annual Security Scanning with Trivy
